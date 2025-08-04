@@ -9,6 +9,7 @@ import {
   Download,
   ChevronDown,
   ChevronRight,
+  Upload,
 } from "lucide-react";
 import {
   Collapsible,
@@ -45,6 +46,7 @@ export default function FileExplorer({
     new Map()
   );
   const [loadingFolders, setLoadingFolders] = useState<Set<string>>(new Set());
+  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
 
   const fetchObjects = async (prefix: string = "") => {
     setLoading(true);
@@ -155,6 +157,73 @@ export default function FileExplorer({
     return totalSize > 0 ? formatFileSize(totalSize) : "—";
   };
 
+  const handleFileUpload = async (folderPath: string, file: File) => {
+    const fullKey = `${folderPath}${file.name}`;
+    setUploadingFiles((prev) => new Set(prev).add(fullKey));
+
+    try {
+      // Get presigned URL
+      const uploadResponse = await fetch(
+        `/api/upload?key=${encodeURIComponent(fullKey)}`
+      );
+      if (!uploadResponse.ok) throw new Error("Failed to get presigned URL");
+
+      const { url } = await uploadResponse.json();
+
+      // Upload file using presigned URL
+      const putResponse = await fetch(url, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (!putResponse.ok) throw new Error("Failed to upload file");
+
+      // Refresh the folder contents
+      if (folderContents.has(folderPath)) {
+        setFolderContents((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(folderPath);
+          return newMap;
+        });
+        await fetchFolderContents(folderPath);
+      }
+
+      // Refresh current directory if uploading to current path
+      if (folderPath === currentPath) {
+        await fetchObjects(currentPath);
+      }
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert(
+        `Upload failed: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
+    } finally {
+      setUploadingFiles((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(fullKey);
+        return newSet;
+      });
+    }
+  };
+
+  const triggerFileUpload = (folderPath: string) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.multiple = true;
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) {
+        Array.from(files).forEach((file) => {
+          handleFileUpload(folderPath, file);
+        });
+      }
+    };
+    input.click();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -177,21 +246,32 @@ export default function FileExplorer({
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       {/* Breadcrumb and Navigation */}
-      <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
-        {currentPath && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={navigateBack}
-            className="flex items-center gap-1"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-        )}
-        <span className="text-sm text-gray-600">
-          Path: /{currentPath || "root"}
-        </span>
+      <div className="flex items-center justify-between gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
+        <div className="flex items-center gap-2">
+          {currentPath && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={navigateBack}
+              className="flex items-center gap-1"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+          )}
+          <span className="text-sm text-gray-600">
+            Path: /{currentPath || "root"}
+          </span>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => triggerFileUpload(currentPath)}
+          className="flex items-center gap-1"
+        >
+          <Upload className="h-4 w-4" />
+          Upload Files
+        </Button>
       </div>
 
       {/* File and Folder List */}
@@ -199,10 +279,10 @@ export default function FileExplorer({
         {/* Header */}
         <div className="bg-gray-100 px-4 py-3 border-b">
           <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
-            <div className="col-span-6">Name</div>
+            <div className="col-span-5">Name</div>
             <div className="col-span-2">Size</div>
             <div className="col-span-3">Last Modified</div>
-            <div className="col-span-1">Actions</div>
+            <div className="col-span-2">Actions</div>
           </div>
         </div>
 
@@ -224,7 +304,7 @@ export default function FileExplorer({
                 <CollapsibleTrigger asChild>
                   <div className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors w-full">
                     <div className="grid grid-cols-12 gap-4 items-center">
-                      <div className="col-span-6 flex items-center gap-2">
+                      <div className="col-span-5 flex items-center gap-2">
                         {isExpanded ? (
                           <ChevronDown className="h-4 w-4 text-gray-500" />
                         ) : (
@@ -242,7 +322,20 @@ export default function FileExplorer({
                         {getFolderDisplaySize(folder)}
                       </div>
                       <div className="col-span-3 text-sm text-gray-500">—</div>
-                      <div className="col-span-1"></div>
+                      <div className="col-span-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            triggerFileUpload(folder);
+                          }}
+                          className="flex items-center gap-1"
+                        >
+                          <Upload className="h-4 w-4" />
+                          Upload
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CollapsibleTrigger>
@@ -260,7 +353,7 @@ export default function FileExplorer({
                           }}
                         >
                           <div className="grid grid-cols-12 gap-4 items-center">
-                            <div className="col-span-6 flex items-center gap-2">
+                            <div className="col-span-5 flex items-center gap-2">
                               <Folder className="h-4 w-4 text-blue-400" />
                               <span className="text-sm">
                                 {nestedFolder
@@ -274,7 +367,20 @@ export default function FileExplorer({
                             <div className="col-span-3 text-sm text-gray-500">
                               —
                             </div>
-                            <div className="col-span-1"></div>
+                            <div className="col-span-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  triggerFileUpload(nestedFolder);
+                                }}
+                                className="flex items-center gap-1"
+                              >
+                                <Upload className="h-3 w-3" />
+                                Upload
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -287,7 +393,7 @@ export default function FileExplorer({
                             className="px-4 py-2 hover:bg-gray-50 transition-colors border-b border-gray-100"
                           >
                             <div className="grid grid-cols-12 gap-4 items-center">
-                              <div className="col-span-6 flex items-center gap-2">
+                              <div className="col-span-5 flex items-center gap-2">
                                 <File className="h-4 w-4 text-gray-400" />
                                 <span className="text-sm">
                                   {file.Key.replace(folder, "")}
@@ -299,7 +405,7 @@ export default function FileExplorer({
                               <div className="col-span-3 text-sm text-gray-600">
                                 {formatDate(file.LastModified)}
                               </div>
-                              <div className="col-span-1">
+                              <div className="col-span-2">
                                 <Button variant="ghost" size="sm">
                                   <Download className="h-3 w-3" />
                                 </Button>
@@ -323,7 +429,7 @@ export default function FileExplorer({
                 className="px-4 py-3 hover:bg-gray-50 transition-colors"
               >
                 <div className="grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-6 flex items-center gap-2">
+                  <div className="col-span-5 flex items-center gap-2">
                     <File className="h-5 w-5 text-gray-500" />
                     <span className="text-sm">
                       {file.Key.replace(currentPath, "")}
@@ -335,7 +441,7 @@ export default function FileExplorer({
                   <div className="col-span-3 text-sm text-gray-600">
                     {formatDate(file.LastModified)}
                   </div>
-                  <div className="col-span-1">
+                  <div className="col-span-2">
                     <Button variant="ghost" size="sm">
                       <Download className="h-4 w-4" />
                     </Button>
@@ -344,9 +450,35 @@ export default function FileExplorer({
               </div>
             ))}
 
+          {/* Uploading files indicator */}
+          {Array.from(uploadingFiles).map((uploadingFile) => (
+            <div
+              key={uploadingFile}
+              className="px-4 py-3 bg-blue-50 border-l-4 border-blue-400"
+            >
+              <div className="grid grid-cols-12 gap-4 items-center">
+                <div className="col-span-5 flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <File className="h-5 w-5 text-blue-500" />
+                  <span className="text-sm text-blue-700">
+                    Uploading: {uploadingFile.split("/").pop()}
+                  </span>
+                </div>
+                <div className="col-span-2 text-sm text-blue-600">
+                  Uploading...
+                </div>
+                <div className="col-span-3 text-sm text-blue-600">
+                  In progress
+                </div>
+                <div className="col-span-2"></div>
+              </div>
+            </div>
+          ))}
+
           {/* Empty state */}
           {data.files.filter((file) => file.Size > 0).length === 0 &&
-            data.folders.length === 0 && (
+            data.folders.length === 0 &&
+            uploadingFiles.size === 0 && (
               <div className="px-4 py-8 text-center text-gray-500">
                 <File className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                 <p>No files or folders found</p>
