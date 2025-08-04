@@ -18,6 +18,6 @@ export async function GET(request: NextRequest) {
     Key: key,
   });
 
-  const url = await getSignedUrl(client, command, { expiresIn: 3600 });
+  const url = await getSignedUrl(client, command, { expiresIn: 60 });
   return NextResponse.json({ url });
 }

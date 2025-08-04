@@ -224,6 +224,42 @@ export default function FileExplorer({
     input.click();
   };
 
+  const handleFileDownload = async (fileKey: string) => {
+    try {
+      // Fetch the file directly from our API
+      const response = await fetch(
+        `/api/download?key=${encodeURIComponent(fileKey)}`
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to download file");
+      }
+
+      // Get the file as a blob
+      const blob = await response.blob();
+
+      // Create object URL and trigger download
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = fileKey.split("/").pop() || "download";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the object URL
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      console.error("Download failed:", err);
+      alert(
+        `Download failed: ${
+          err instanceof Error ? err.message : "Unknown error"
+        }`
+      );
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -369,7 +405,7 @@ export default function FileExplorer({
                             </div>
                             <div className="col-span-2">
                               <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -406,7 +442,11 @@ export default function FileExplorer({
                                 {formatDate(file.LastModified)}
                               </div>
                               <div className="col-span-2">
-                                <Button variant="ghost" size="sm">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleFileDownload(file.Key)}
+                                >
                                   <Download className="h-3 w-3" />
                                 </Button>
                               </div>
@@ -442,7 +482,11 @@ export default function FileExplorer({
                     {formatDate(file.LastModified)}
                   </div>
                   <div className="col-span-2">
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleFileDownload(file.Key)}
+                    >
                       <Download className="h-4 w-4" />
                     </Button>
                   </div>
