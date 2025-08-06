@@ -1,21 +1,26 @@
-import NavBar from "@/components/nav";
-import FileExplorer from "@/components/file-explorer";
+import { currentUser } from "@clerk/nextjs/server";
+import { Suspense } from "react";
+import LandingPage from "@/components/LandingPage";
+import AuthenticatedApp from "@/components/AuthenticatedApp";
 
-export default function Home() {
+// Loading component for Suspense
+function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <NavBar />
-      <main className="container mx-auto py-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            S3 File Explorer
-          </h2>
-          <p className="text-gray-600">
-            Browse and manage your S3 bucket contents
-          </p>
-        </div>
-        <FileExplorer />
-      </main>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-700 font-medium">Loading S3 Explorer...</p>
+      </div>
     </div>
+  );
+}
+
+export default async function HomePage() {
+  const user = await currentUser();
+
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      {!user ? <LandingPage /> : <AuthenticatedApp />}
+    </Suspense>
   );
 }

@@ -1,13 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-
-const client = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getUserS3Client } from "@/lib/s3-client";
 
 export async function GET(request: NextRequest) {
   const key = request.nextUrl.searchParams.get("key");
@@ -15,37 +8,38 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Key is required" }, { status: 400 });
   }
 
-  try {
-    const command = new GetObjectCommand({
-      Bucket: "s3-web-ui-asim",
-      Key: key,
-    });
+  const s3Config = await getUserS3Client();
 
-    const response = await client.send(command);
-
-    if (!response.Body) {
-      return NextResponse.json({ error: "File not found" }, { status: 404 });
-    }
-
-    // Convert the stream to bytes
-    const bytes = await response.Body.transformToByteArray();
-
-    // Get filename from key
-    const filename = key.split("/").pop() || "download";
-
-    // Return the file with proper headers
-    return new NextResponse(bytes, {
-      headers: {
-        "Content-Type": response.ContentType || "application/octet-stream",
-        "Content-Disposition": `attachment; filename="${filename}"`,
-        "Content-Length": response.ContentLength?.toString() || "",
-      },
-    });
-  } catch (error) {
-    console.error("Download error:", error);
+  if (!s3Config) {
     return NextResponse.json(
-      { error: "Failed to download file" },
-      { status: 500 }
+      {
+        error: "No S3 credentials found. Please set up your AWS credentials.",
+      },
+      { status: 404 }
     );
   }
+
+  const { client, bucketName } = s3Config;
+
+  const command = new GetObjectCommand({
+    Bucket: bucketName,
+    Key: key,
+  });
+
+  const response = await client.send(command);
+
+  if (!response.Body) {
+    return NextResponse.json({ error: "File not found" }, { status: 404 });
+  }
+
+  const bytes = await response.Body.transformToByteArray();
+  const filename = key.split("/").pop() || "download";
+
+  return new NextResponse(bytes, {
+    headers: {
+      "Content-Type": response.ContentType || "application/octet-stream",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Length": response.ContentLength?.toString() || "",
+    },
+  });
 }
