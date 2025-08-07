@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "S3 Web UI - Secure File Explorer",
+  title: "S3 Buddy",
   description:
     "Manage your AWS S3 buckets with enterprise-grade security and beautiful interface.",
 };

@@ -33,7 +33,7 @@ export default function LandingPage() {
               </div>
               <div className="flex flex-col">
                 <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none">
-                  S3 <span className="text-emerald-600">Web UI</span>
+                  S3 <span className="text-emerald-600">Buddy</span>
                 </h1>
                 <p className="text-xs text-slate-500 font-medium tracking-wide">
                   Storage Management Console
