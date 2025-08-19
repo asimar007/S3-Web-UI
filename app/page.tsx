@@ -1,6 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { Suspense } from "react";
-import LandingPage from "@/components/LandingPage";
+import { HeroSection } from "@/components/blocks/hero-section-1";
+import FooterSection from "@/components/ui/footer";
 import AuthenticatedApp from "@/components/AuthenticatedApp";
 
 // Loading component for Suspense
@@ -20,7 +21,14 @@ export default async function HomePage() {
 
   return (
     <Suspense fallback={<LoadingScreen />}>
-      {!user ? <LandingPage /> : <AuthenticatedApp />}
+      {!user ? (
+        <>
+          <HeroSection />
+          <FooterSection />
+        </>
+      ) : (
+        <AuthenticatedApp />
+      )}
     </Suspense>
   );
 }
