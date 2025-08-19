@@ -287,15 +287,15 @@ export default function FileExplorer() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-        <p className="text-red-800">Error: {error}</p>
+      <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-md">
+        <p className="text-destructive">Error: {error}</p>
         <Button onClick={() => fetchObjects(currentPath)} className="mt-2">
           Retry
         </Button>
@@ -304,18 +304,19 @@ export default function FileExplorer() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
+    <div className="w-full p-2 sm:p-4">
       {/* Enhanced Breadcrumb and Navigation */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <BucketInfo bucketInfo={bucketInfo} />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <CreateFolderButton
               onCreateFolder={() => setIsCreateFolderModalOpen(true)}
               variant="outline"
-              className="hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors"
+              size="sm"
+              className="hover:bg-muted hover:text-foreground transition-colors text-xs sm:text-sm"
             />
             <Button
               type="button"
@@ -326,10 +327,11 @@ export default function FileExplorer() {
                 e.stopPropagation();
                 triggerFileUpload(currentPath);
               }}
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all"
+              className="flex items-center gap-1 sm:gap-2 shadow-md hover:shadow-lg transition-all text-xs sm:text-sm"
             >
-              <Upload className="h-4 w-4" />
-              Upload Files
+              <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Upload Files</span>
+              <span className="xs:hidden">Upload</span>
             </Button>
           </div>
         </div>
@@ -338,7 +340,7 @@ export default function FileExplorer() {
       </div>
 
       {/* Enhanced File and Folder List */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border overflow-hidden">
         <FileListHeader />
 
         {/* Content */}

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronRight, Menu, X } from "lucide-react";
+import { ChevronRight, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { cn } from "@/lib/utils";
@@ -380,15 +380,21 @@ const HeroHeader = () => {
 
 const Logo = ({ className }: { className?: string }) => {
   return (
-    <div className={`flex items-center ${className}`}>
-      <Image
-        src="/images/S3.png"
-        alt="S3 Buddy Logo"
-        width={20}
-        height={20}
-        style={{ objectFit: "contain" }}
-      />
-      <span className="ml-2 text-lg font-semibold text-white">S3 Buddy</span>
+    <div className={`flex items-center gap-3 ${className}`}>
+      <div className="flex items-center justify-center w-8 h-8 rounded-xl overflow-hidden">
+        <Image
+          src="/images/S3.png"
+          alt="S3 Logo"
+          width={32}
+          height={32}
+          className="w-full h-full object-contain"
+        />
+      </div>
+      <div className="flex flex-col">
+        <h1 className="text-lg font-bold text-foreground tracking-tight leading-none">
+          S3 <span className="text-primary">Buddy</span>
+        </h1>
+      </div>
     </div>
   );
 };

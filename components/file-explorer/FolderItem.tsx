@@ -42,46 +42,52 @@ export default function FolderItem({
   return (
     <Collapsible open={isExpanded} onOpenChange={() => onToggle(folder)}>
       <CollapsibleTrigger asChild>
-        <div className="px-6 py-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 cursor-pointer transition-all duration-200 w-full border-l-4 border-transparent hover:border-blue-400">
-          <div className="grid grid-cols-12 gap-4 items-center">
-            <div className="col-span-4 flex items-center gap-3">
-              <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-blue-100 hover:bg-blue-200 transition-colors">
+        <div className="px-3 sm:px-6 py-3 sm:py-4 hover:bg-muted/50 cursor-pointer transition-all duration-200 w-full border-l-4 border-transparent hover:border-primary">
+          <div className="grid grid-cols-12 gap-2 sm:gap-4 items-center">
+            <div className="col-span-6 sm:col-span-4 flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-muted hover:bg-muted/80 transition-colors flex-shrink-0">
                 {isExpanded ? (
-                  <ChevronDown className="h-3 w-3 text-blue-600" />
+                  <ChevronDown className="h-3 w-3 text-primary" />
                 ) : (
-                  <ChevronRight className="h-3 w-3 text-blue-600" />
+                  <ChevronRight className="h-3 w-3 text-primary" />
                 )}
               </div>
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm">
-                <Folder className="h-4 w-4 text-white" />
+              <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-primary shadow-sm flex-shrink-0">
+                <Folder className="h-3 w-3 sm:h-4 sm:w-4 text-primary-foreground" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-gray-800">
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-xs sm:text-sm font-semibold text-foreground truncate">
                   {folderName}
                 </span>
-                <span className="text-xs text-gray-500">Folder</span>
+                <span className="text-xs text-muted-foreground sm:hidden">
+                  {getFolderDisplaySize(folder)}
+                </span>
+                <span className="hidden sm:block text-xs text-muted-foreground">
+                  Folder
+                </span>
               </div>
               {isLoading && (
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-200 border-t-blue-500"></div>
+                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-2 border-muted border-t-primary flex-shrink-0"></div>
               )}
             </div>
-            <div className="col-span-2">
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+            <div className="hidden sm:block sm:col-span-2">
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
                 {getFolderDisplaySize(folder)}
               </span>
             </div>
-            <div className="col-span-3 text-sm text-gray-500">
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-50 text-gray-600">
+            <div className="hidden sm:block sm:col-span-3 text-sm text-muted-foreground">
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-muted/50 text-muted-foreground">
                 Directory
               </span>
             </div>
-            <div className="col-span-3">
+            <div className="col-span-6 sm:col-span-3 flex justify-end">
               <UploadButton
                 onUpload={(e) => {
                   e?.stopPropagation();
                   onUpload(folder);
                 }}
-                className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                size="sm"
+                className="hover:bg-muted hover:text-foreground transition-colors text-xs sm:text-sm px-2 sm:px-3"
               />
             </div>
           </div>
@@ -89,7 +95,7 @@ export default function FolderItem({
       </CollapsibleTrigger>
       <CollapsibleContent>
         {contents && (
-          <div className="ml-8 border-l-2 border-gray-200">
+          <div className="ml-8 border-l-2 border-border">
             {/* Nested folders */}
             {contents.folders.map((nestedFolder) => (
               <NestedFolderItem

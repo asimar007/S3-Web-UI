@@ -26,3 +26,34 @@ export const cleanFolderName = (
 ): string => {
   return folder.replace(currentPath, "").replace("/", "");
 };
+
+export const truncateFileName = (
+  fileName: string,
+  maxLength: number = 20
+): string => {
+  if (fileName.length <= maxLength) {
+    return fileName;
+  }
+
+  // Split filename and extension
+  const lastDotIndex = fileName.lastIndexOf(".");
+  const name =
+    lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : fileName;
+  const extension = lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : "";
+
+  // If name is short enough, return as is
+  if (name.length <= maxLength - extension.length - 3) {
+    // 3 for "..."
+    return fileName;
+  }
+
+  // Calculate how many characters we can show from start and end
+  const availableLength = maxLength - extension.length - 3; // 3 for "..."
+  const startLength = Math.ceil(availableLength * 0.6); // 60% for start
+  const endLength = Math.floor(availableLength * 0.4); // 40% for end
+
+  const startPart = name.substring(0, startLength);
+  const endPart = name.substring(name.length - endLength);
+
+  return `${startPart}...${endPart}${extension}`;
+};

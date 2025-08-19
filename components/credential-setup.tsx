@@ -91,17 +91,17 @@ export default function CredentialSetup({
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md shadow-xl border bg-background/95 backdrop-blur-sm">
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Key className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Key className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 Setup Complete!
               </h3>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Your AWS credentials have been saved securely.
               </p>
             </div>
@@ -112,7 +112,7 @@ export default function CredentialSetup({
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <nav className="relative z-20 bg-transparent">
         <div className="container mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
@@ -127,20 +127,24 @@ export default function CredentialSetup({
                   className="w-full h-full object-contain"
                 />
               </div>
-              <h1 className="text-lg font-semibold text-gray-900">S3 Web UI</h1>
+              <div className="flex flex-col">
+                <h1 className="text-lg font-bold text-foreground tracking-tight leading-none">
+                  S3 <span className="text-primary">Buddy</span>
+                </h1>
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
       <div className="flex items-center justify-center p-4 pt-16">
-        <Card className="w-full max-w-lg shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+        <Card className="w-full max-w-lg shadow-xl border bg-background/95 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Key className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Key className="w-5 h-5 text-primary" />
               AWS Credentials Setup
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               Enter your AWS credentials to access your S3 buckets. Your
               credentials will be encrypted and stored securely.
             </CardDescription>
@@ -148,7 +152,10 @@ export default function CredentialSetup({
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
+                <Label
+                  htmlFor="email"
+                  className="flex items-center gap-2 text-foreground font-medium"
+                >
                   <span>Email</span>
                 </Label>
                 <Input
@@ -158,12 +165,16 @@ export default function CredentialSetup({
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   required
+                  className="bg-background border-border focus:border-primary text-foreground placeholder:text-muted-foreground"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="accessKey" className="flex items-center gap-2">
-                  <Key className="w-4 h-4" />
+                <Label
+                  htmlFor="accessKey"
+                  className="flex items-center gap-2 text-foreground font-medium"
+                >
+                  <Key className="w-4 h-4 text-primary" />
                   AWS Access Key ID
                 </Label>
                 <Input
@@ -175,12 +186,16 @@ export default function CredentialSetup({
                     handleInputChange("awsAccessKeyId", e.target.value)
                   }
                   required
+                  className="bg-background border-border focus:border-primary text-foreground placeholder:text-muted-foreground"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="secretKey" className="flex items-center gap-2">
-                  <Key className="w-4 h-4" />
+                <Label
+                  htmlFor="secretKey"
+                  className="flex items-center gap-2 text-foreground font-medium"
+                >
+                  <Key className="w-4 h-4 text-primary" />
                   AWS Secret Access Key
                 </Label>
                 <Input
@@ -192,12 +207,16 @@ export default function CredentialSetup({
                     handleInputChange("awsSecretAccessKey", e.target.value)
                   }
                   required
+                  className="bg-background border-border focus:border-primary text-foreground placeholder:text-muted-foreground"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="region" className="flex items-center gap-2">
-                  <Globe className="w-4 h-4" />
+                <Label
+                  htmlFor="region"
+                  className="flex items-center gap-2 text-foreground font-medium"
+                >
+                  <Globe className="w-4 h-4 text-primary" />
                   AWS Region
                 </Label>
                 <Input
@@ -209,12 +228,16 @@ export default function CredentialSetup({
                     handleInputChange("awsRegion", e.target.value)
                   }
                   required
+                  className="bg-background border-border focus:border-primary text-foreground placeholder:text-muted-foreground"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bucket" className="flex items-center gap-2">
-                  <Folder className="w-4 h-4" />
+                <Label
+                  htmlFor="bucket"
+                  className="flex items-center gap-2 text-foreground font-medium"
+                >
+                  <Folder className="w-4 h-4 text-primary" />
                   S3 Bucket Name
                 </Label>
                 <Input
@@ -226,6 +249,7 @@ export default function CredentialSetup({
                     handleInputChange("bucketName", e.target.value)
                   }
                   required
+                  className="bg-background border-border focus:border-primary text-foreground placeholder:text-muted-foreground"
                 />
               </div>
 
@@ -250,11 +274,11 @@ export default function CredentialSetup({
               </Button>
             </form>
 
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">
+            <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border">
+              <h4 className="text-sm font-medium text-foreground mb-2">
                 Security Note
               </h4>
-              <p className="text-xs text-blue-700">
+              <p className="text-xs text-muted-foreground">
                 Your AWS credentials are encrypted using AES-256 encryption
                 before being stored in our secure database. We never store your
                 credentials in plain text.

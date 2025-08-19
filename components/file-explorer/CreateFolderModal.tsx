@@ -61,43 +61,36 @@ export default function CreateFolderModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-      {/* Amber Glow Background */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: `radial-gradient(125% 125% at 50% 90%, #ffffff 40%, #f59e0b 100%)`,
-          backgroundSize: "100% 100%",
-        }}
-      />
-
-      {/* Semi-transparent overlay */}
-      <div className="absolute inset-0 bg-black/20 z-10"></div>
-
-      <Card className="relative z-20 w-full max-w-md shadow-2xl border-0">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-background/80 backdrop-blur-sm">
+      <Card className="relative z-20 w-full max-w-md shadow-2xl border bg-background/95 backdrop-blur-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <FolderPlus className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <FolderPlus className="w-5 h-5 text-primary" />
               Create New Folder
             </CardTitle>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleClose}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 hover:bg-muted text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <CardDescription>
+          <CardDescription className="text-muted-foreground">
             Create a new folder in {currentPath || "root directory"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="folderName">Folder Name</Label>
+              <Label
+                htmlFor="folderName"
+                className="text-foreground font-medium"
+              >
+                Folder Name
+              </Label>
               <Input
                 id="folderName"
                 type="text"
@@ -106,6 +99,7 @@ export default function CreateFolderModal({
                 onChange={(e) => setFolderName(e.target.value)}
                 autoFocus
                 required
+                className="bg-background border-border focus:border-primary text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
