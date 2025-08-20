@@ -5,6 +5,8 @@ import NavBar from "@/components/nav";
 import FileExplorer from "@/components/file-explorer";
 import CredentialSetup from "@/components/credential-setup";
 import { Database } from "lucide-react";
+import { FlipText } from "@/components/magicui/flip-text";
+import { Highlighter } from "@/components/magicui/highlighter";
 
 export default function AuthenticatedApp() {
   const [hasCredentials, setHasCredentials] = useState<boolean | null>(null);
@@ -72,19 +74,20 @@ export default function AuthenticatedApp() {
         <div className="mb-8 sm:mb-12 max-w-7xl mx-auto">
           <div className="text-center sm:text-left">
             {/* Main Title */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4">
-              <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                S3 File Explorer
-              </span>
+            <h1 className="text-left text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4">
+              <FlipText>S3 File Explorer</FlipText>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl">
-              <span className="text-primary font-medium">
-                {" "}
-                Stop wrestling with the AWS Console clunky interface
-              </span>{" "}
-              and manage your S3 buckets through a clean, friendly dashboard
+            <p className="text-white text-lg sm:text-xl max-w-2xl">
+              Stop wrestling with the{" "}
+              <Highlighter action="highlight" color="#03A6A1">
+                AWS Console clunky interface
+              </Highlighter>{" "}
+              and manage your S3 buckets through a{" "}
+              <Highlighter action="underline" color="#FF9800">
+                clean, friendly dashboard
+              </Highlighter>{" "}
               built for speed and productivity.
             </p>
 
@@ -93,13 +96,13 @@ export default function AuthenticatedApp() {
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border">
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                 <span className="text-sm font-medium text-foreground">
-                  Secure Connection
+                  Encrypted Access
                 </span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                 <span className="text-sm font-medium text-foreground">
-                  Real-time Sync
+                  Your S3, Your Control
                 </span>
               </div>
             </div>

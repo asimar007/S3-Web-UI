@@ -2,12 +2,15 @@
 
 import React from "react";
 import Link from "next/link";
-import { ChevronRight, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { SignInButton } from "@clerk/nextjs";
+import { HyperText } from "@/components/magicui/hyper-text";
+import { Lens } from "@/components/magicui/lens";
+import { Highlighter } from "@/components/magicui/highlighter";
 
 const transitionVariants = {
   item: {
@@ -90,9 +93,15 @@ export function HeroSection() {
                     S3 File Explorer
                   </h1>
                   <p className="mx-auto mt-8 max-w-2xl text-balance text-lg">
-                    Manage your AWS S3 buckets with enterprise-grade security
-                    and a beautiful interface. Your credentials are encrypted
-                    and protected with AES-256 encryption.
+                    Skip the{" "}
+                    <Highlighter action="highlight" color="#FF9800">
+                      clunky AWS Console
+                    </Highlighter>{" "}
+                    — manage your S3 buckets with a{" "}
+                    <Highlighter action="underline" color="#10B981">
+                      clean, intuitive dashboard
+                    </Highlighter>{" "}
+                    designed for speed and productivity.
                   </p>
                 </AnimatedGroup>
 
@@ -151,19 +160,25 @@ export function HeroSection() {
                   className="bg-gradient-to-b to-background absolute inset-0 z-10 from-transparent from-35%"
                 />
                 <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
-                  <img
-                    className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                    src="https://tailark.com//_next/image?url=%2Fmail2.png&w=3840&q=75"
-                    alt="app screen"
-                    width="2700"
-                    height="1440"
-                  />
-                  <img
+                  <Lens>
+                    <Image
+                      className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
+                      src="/images/mail2.webp"
+                      alt="app screen"
+                      width={2700}
+                      height={1440}
+                      priority={false}
+                      quality={75}
+                    />
+                  </Lens>
+                  <Image
                     className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
-                    src="https://tailark.com/_next/image?url=%2Fmail2-light.png&w=3840&q=75"
+                    src="/images/"
                     alt="app screen"
-                    width="2700"
-                    height="1440"
+                    width={2700}
+                    height={1440}
+                    priority={false}
+                    quality={75}
                   />
                 </div>
               </div>
@@ -172,17 +187,7 @@ export function HeroSection() {
         </section>
         <section className="bg-background pb-16 pt-16 md:pb-32">
           <div className="group relative m-auto max-w-5xl px-6">
-            <div className="absolute inset-0 z-10 flex scale-95 items-center justify-center opacity-0 duration-500 group-hover:scale-100 group-hover:opacity-100">
-              <Link
-                href="/"
-                className="block text-sm duration-150 hover:opacity-75"
-              >
-                <span> Meet Our Customers</span>
-
-                <ChevronRight className="ml-1 inline-block size-3" />
-              </Link>
-            </div>
-            <div className="group-hover:blur-xs mx-auto mt-12 grid max-w-2xl grid-cols-4 gap-x-12 gap-y-8 transition-all duration-500 group-hover:opacity-50 sm:gap-x-16 sm:gap-y-14">
+            <div className="mx-auto mt-12 grid max-w-2xl grid-cols-4 gap-x-12 gap-y-8 transition-all duration-500 group-hover:opacity-50 sm:gap-x-16 sm:gap-y-14">
               <div className="flex">
                 <img
                   className="mx-auto h-5 w-fit dark:invert"
@@ -392,7 +397,7 @@ const Logo = ({ className }: { className?: string }) => {
       </div>
       <div className="flex flex-col">
         <h1 className="text-lg font-bold text-foreground tracking-tight leading-none">
-          S3 <span className="text-primary">Buddy</span>
+          <HyperText>S3 Buddy</HyperText>
         </h1>
       </div>
     </div>

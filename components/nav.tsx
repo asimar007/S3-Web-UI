@@ -1,22 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import React from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Settings, Globe, Loader2, Menu, X, Info } from "lucide-react";
 import CredentialEditModal from "@/components/credential-edit-modal";
 import Image from "next/image";
-import Link from "next/link";
+import { HyperText } from "@/components/magicui/hyper-text";
+
 import { cn } from "@/lib/utils";
 import { SignInButton } from "@clerk/nextjs";
-
-const menuItems = [
-  { name: "Features", href: "#link" },
-  { name: "Solution", href: "#link" },
-  { name: "Pricing", href: "#link" },
-  { name: "About", href: "#link" },
-];
 
 const NavBar = () => {
   const { user } = useUser();
@@ -29,7 +22,7 @@ const NavBar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -87,7 +80,7 @@ const NavBar = () => {
         >
           <div
             className={cn(
-              "mx-auto mt-2 max-w-6xl px-4 sm:px-6 transition-all duration-300 lg:px-12",
+              "mx-auto mt-2 max-w-6xl px-4 sm:px-6 transition-all duration-200 ease-out lg:px-12",
               isScrolled &&
                 "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5"
             )}
@@ -113,7 +106,7 @@ const NavBar = () => {
                   </div>
                   <div className="flex flex-col">
                     <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight leading-none">
-                      S3 <span className="text-primary">Buddy</span>
+                      <HyperText>S3 Buddy</HyperText>
                     </h1>
                   </div>
                 </div>
@@ -128,24 +121,6 @@ const NavBar = () => {
                   <X className="group-data-[state=active]:rotate-0 group-data-[state=active]:scale-100 group-data-[state=active]:opacity-100 absolute inset-0 m-auto size-5 sm:size-6 -rotate-180 scale-0 opacity-0 duration-200" />
                 </button>
               </div>
-
-              {/* Center Menu - Only show for unauthenticated users */}
-              {!user && (
-                <div className="absolute inset-0 m-auto hidden size-fit lg:block">
-                  <ul className="flex gap-8 text-sm">
-                    {menuItems.map((item, index) => (
-                      <li key={index}>
-                        <Link
-                          href={item.href}
-                          className="text-muted-foreground hover:text-accent-foreground block duration-150"
-                        >
-                          <span>{item.name}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
 
               {/* Right Section - Desktop */}
               <div className="hidden lg:flex lg:items-center lg:gap-4">
@@ -244,25 +219,6 @@ const NavBar = () => {
 
               {/* Mobile Menu */}
               <div className="bg-background group-data-[state=active]:block mb-6 hidden w-full rounded-3xl border p-4 sm:p-6 shadow-2xl shadow-zinc-300/20 lg:hidden dark:shadow-none">
-                {/* Mobile Menu - Unauthenticated users */}
-                {!user && (
-                  <div className="mb-6">
-                    <ul className="space-y-4 text-base">
-                      {menuItems.map((item, index) => (
-                        <li key={index}>
-                          <Link
-                            href={item.href}
-                            className="text-muted-foreground hover:text-accent-foreground block duration-150 py-2"
-                            onClick={() => setMenuState(false)}
-                          >
-                            <span>{item.name}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
                 {/* Mobile Menu Actions */}
                 <div className="flex flex-col space-y-3">
                   {user ? (
