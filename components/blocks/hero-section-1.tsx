@@ -2,8 +2,24 @@
 
 import React from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import {
+  Menu,
+  X,
+  Shield,
+  Cloud,
+  Zap,
+  Upload,
+  Download,
+  Lock,
+  Trash2,
+  FolderOpen,
+  Users,
+  BarChart3,
+  Globe,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -163,7 +179,7 @@ export function HeroSection() {
                   <Lens>
                     <Image
                       className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                      src="/images/mail2.webp"
+                      src="/images/file-explorer.png"
                       alt="app screen"
                       width={2700}
                       height={1440}
@@ -171,98 +187,258 @@ export function HeroSection() {
                       quality={75}
                     />
                   </Lens>
-                  <Image
-                    className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
-                    src="/images/"
-                    alt="app screen"
-                    width={2700}
-                    height={1440}
-                    priority={false}
-                    quality={75}
-                  />
                 </div>
               </div>
             </AnimatedGroup>
           </div>
         </section>
-        <section className="bg-background pb-16 pt-16 md:pb-32">
-          <div className="group relative m-auto max-w-5xl px-6">
-            <div className="mx-auto mt-12 grid max-w-2xl grid-cols-4 gap-x-12 gap-y-8 transition-all duration-500 group-hover:opacity-50 sm:gap-x-16 sm:gap-y-14">
-              <div className="flex">
-                <img
-                  className="mx-auto h-5 w-fit dark:invert"
-                  src="https://html.tailus.io/blocks/customers/nvidia.svg"
-                  alt="Nvidia Logo"
-                  height="20"
-                  width="auto"
-                />
+
+        {/* Features Grid */}
+        <section
+          id="features-section"
+          className="relative py-12 bg-background/50"
+        >
+          <div className="mx-auto max-w-7xl px-6">
+            <AnimatedGroup
+              variants={{
+                container: {
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.1,
+                      delayChildren: 0.3,
+                    },
+                  },
+                },
+                item: transitionVariants.item,
+              }}
+            >
+              <div className="text-center mb-16">
+                <HyperText className="text-3xl md:text-4xl font-bold mb-4">
+                  Advanced S3 Management Made Simple
+                </HyperText>
+                <p className="text-lg text-white max-w-2xl mx-auto">
+                  With our trusted platform, you can safely and efficiently
+                  handle all your S3 storage
+                  <Highlighter action="highlight" color="#3B82F6">
+                    {" "}
+                    tasks, making your work faster and easier
+                  </Highlighter>
+                </p>
               </div>
 
-              <div className="flex">
-                <img
-                  className="mx-auto h-4 w-fit dark:invert"
-                  src="https://html.tailus.io/blocks/customers/column.svg"
-                  alt="Column Logo"
-                  height="16"
-                  width="auto"
-                />
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Security First */}
+                <Card className="relative group overflow-hidden p-8 hover:shadow-xl transition-all duration-500">
+                  <div className="relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                      <Shield className="w-7 h-7 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">
+                      AES-256 Encryption
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Your AWS credentials are encrypted with military-grade
+                      AES-256 before storage. Zero-trust architecture ensures
+                      maximum security.
+                    </p>
+                  </div>
+                </Card>
+
+                {/* Performance */}
+                <Card className="relative group overflow-hidden p-8 hover:shadow-xl transition-all duration-500">
+                  <div className="relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                      <Zap className="w-7 h-7 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">
+                      Lightning Fast
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Built with Next.js 15 and React 19. Turbopack-powered
+                      builds and serverless architecture for optimal
+                      performance.
+                    </p>
+                  </div>
+                </Card>
+
+                {/* AWS Native */}
+                <Card className="relative group overflow-hidden p-8 hover:shadow-xl transition-all duration-500">
+                  <div className="relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                      <Cloud className="w-7 h-7 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">
+                      AWS Native Integration
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Direct S3 API integration with AWS SDK v3. Presigned URLs,
+                      secure uploads, and real-time bucket management.
+                    </p>
+                  </div>
+                </Card>
+
+                {/* Modern UI */}
+                <Card className="relative group overflow-hidden p-8 hover:shadow-xl transition-all duration-500">
+                  <div className="relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                      <Globe className="w-7 h-7 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">
+                      Modern Interface
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Beautiful, responsive design with Tailwind CSS v4. Dark
+                      mode support and smooth animations powered by Framer
+                      Motion.
+                    </p>
+                  </div>
+                </Card>
+
+                {/* Enterprise Ready */}
+                <Card className="relative group overflow-hidden p-8 hover:shadow-xl transition-all duration-500">
+                  <div className="relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                      <Users className="w-7 h-7 text-rose-600 dark:text-rose-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">
+                      Enterprise Ready
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Scalable architecture with Clerk authentication,
+                      PostgreSQL database, and Vercel deployment for production
+                      workloads.
+                    </p>
+                  </div>
+                </Card>
+
+                {/* Analytics */}
+                <Card className="relative group overflow-hidden p-8 hover:shadow-xl transition-all duration-500">
+                  <div className="relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                      <BarChart3 className="w-7 h-7 text-teal-600 dark:text-teal-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-4 text-foreground">
+                      Real-time Analytics
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Monitor bucket usage, track file operations, and get
+                      insights into your S3 storage patterns with live
+                      dashboards.
+                    </p>
+                  </div>
+                </Card>
               </div>
-              <div className="flex">
-                <img
-                  className="mx-auto h-4 w-fit dark:invert"
-                  src="https://html.tailus.io/blocks/customers/github.svg"
-                  alt="GitHub Logo"
-                  height="16"
-                  width="auto"
-                />
-              </div>
-              <div className="flex">
-                <img
-                  className="mx-auto h-5 w-fit dark:invert"
-                  src="https://html.tailus.io/blocks/customers/nike.svg"
-                  alt="Nike Logo"
-                  height="20"
-                  width="auto"
-                />
-              </div>
-              <div className="flex">
-                <img
-                  className="mx-auto h-5 w-fit dark:invert"
-                  src="https://html.tailus.io/blocks/customers/lemonsqueezy.svg"
-                  alt="Lemon Squeezy Logo"
-                  height="20"
-                  width="auto"
-                />
-              </div>
-              <div className="flex">
-                <img
-                  className="mx-auto h-4 w-fit dark:invert"
-                  src="https://html.tailus.io/blocks/customers/laravel.svg"
-                  alt="Laravel Logo"
-                  height="16"
-                  width="auto"
-                />
-              </div>
-              <div className="flex">
-                <img
-                  className="mx-auto h-7 w-fit dark:invert"
-                  src="https://html.tailus.io/blocks/customers/lilly.svg"
-                  alt="Lilly Logo"
-                  height="28"
-                  width="auto"
-                />
+            </AnimatedGroup>
+          </div>
+        </section>
+
+        {/* Additional Features */}
+        <section id="solutions-section" className="relative py-10">
+          <div className="mx-auto max-w-7xl px-6">
+            <AnimatedGroup
+              variants={{
+                container: {
+                  visible: {
+                    transition: {
+                      staggerChildren: 0.08,
+                      delayChildren: 0.2,
+                    },
+                  },
+                },
+                item: transitionVariants.item,
+              }}
+            >
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  Everything You Need for{" "}
+                  <Highlighter action="highlight" color="#10B981">
+                    S3 Management
+                  </Highlighter>
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  From simple file operations to advanced bucket management, S3
+                  Buddy provides all the tools you need in one beautiful
+                  interface.
+                </p>
               </div>
 
-              <div className="flex">
-                <img
-                  className="mx-auto h-6 w-fit dark:invert"
-                  src="https://html.tailus.io/blocks/customers/openai.svg"
-                  alt="OpenAI Logo"
-                  height="24"
-                  width="auto"
-                />
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+                {/* File Upload */}
+                <div className="group text-center">
+                  <div className="relative">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <Upload className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+                    </div>
+                  </div>
+                  <h4 className="font-semibold text-foreground mb-2">
+                    Drag & Drop Upload
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Intuitive file uploads with real-time progress tracking
+                  </p>
+                </div>
+
+                {/* File Download */}
+                <div className="group text-center">
+                  <div className="relative">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <Download className="w-10 h-10 text-green-600 dark:text-green-400" />
+                    </div>
+                  </div>
+                  <h4 className="font-semibold text-foreground mb-2">
+                    Secure Downloads
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Fast, secure file downloads with presigned URLs
+                  </p>
+                </div>
+
+                {/* Folder Management */}
+                <div className="group text-center">
+                  <div className="relative">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <FolderOpen className="w-10 h-10 text-purple-600 dark:text-purple-400" />
+                    </div>
+                  </div>
+                  <h4 className="font-semibold text-foreground mb-2">
+                    Smart Folders
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Organize files with virtual folder structures
+                  </p>
+                </div>
+
+                {/* File Deletion */}
+                <div className="group text-center">
+                  <div className="relative">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <Trash2 className="w-10 h-10 text-red-600 dark:text-red-400" />
+                    </div>
+                  </div>
+                  <h4 className="font-semibold text-foreground mb-2">
+                    Safe Deletion
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Secure file deletion with confirmation dialogs
+                  </p>
+                </div>
+
+                {/* Access Control */}
+                <div className="group text-center">
+                  <div className="relative">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <Lock className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+                    </div>
+                  </div>
+                  <h4 className="font-semibold text-foreground mb-2">
+                    Access Control
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Role-based permissions with encrypted credentials
+                  </p>
+                </div>
               </div>
-            </div>
+            </AnimatedGroup>
           </div>
         </section>
       </main>
@@ -271,10 +447,27 @@ export function HeroSection() {
 }
 
 const menuItems = [
-  { name: "Features", href: "#link" },
-  { name: "Solution", href: "#link" },
-  { name: "Pricing", href: "#link" },
-  { name: "About", href: "#link" },
+  {
+    name: "Features",
+    onClick: () => {
+      const element = document.getElementById("features-section");
+      element?.scrollIntoView({ behavior: "smooth", block: "start" });
+    },
+  },
+  {
+    name: "Solutions",
+    onClick: () => {
+      const element = document.getElementById("solutions-section");
+      element?.scrollIntoView({ behavior: "smooth", block: "start" });
+    },
+  },
+  {
+    name: "About",
+    onClick: () => {
+      const element = document.getElementById("about-section");
+      element?.scrollIntoView({ behavior: "smooth", block: "start" });
+    },
+  },
 ];
 
 const HeroHeader = () => {
@@ -325,12 +518,12 @@ const HeroHeader = () => {
               <ul className="flex gap-8 text-sm">
                 {menuItems.map((item, index) => (
                   <li key={index}>
-                    <Link
-                      href={item.href}
-                      className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                    <button
+                      onClick={item.onClick}
+                      className="text-muted-foreground hover:text-accent-foreground block duration-150 bg-transparent border-none cursor-pointer"
                     >
                       <span>{item.name}</span>
-                    </Link>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -341,12 +534,15 @@ const HeroHeader = () => {
                 <ul className="space-y-6 text-base">
                   {menuItems.map((item, index) => (
                     <li key={index}>
-                      <Link
-                        href={item.href}
-                        className="text-muted-foreground hover:text-accent-foreground block duration-150"
+                      <button
+                        onClick={() => {
+                          item.onClick();
+                          setMenuState(false); // Close mobile menu after click
+                        }}
+                        className="text-muted-foreground hover:text-accent-foreground block duration-150 bg-transparent border-none cursor-pointer text-left w-full"
                       >
                         <span>{item.name}</span>
-                      </Link>
+                      </button>
                     </li>
                   ))}
                 </ul>

@@ -6,13 +6,13 @@ A beautiful, secure, and intuitive web interface for managing AWS S3 buckets and
 
 ### Landing Page
 
-![Landing Page](./screenshots/landing-page.png)
+![Landing Page](./public/images/Home.png)
 
 _Clean and modern landing page with authentication flow powered by Clerk_
 
 ### File Explorer Dashboard
 
-![File Explorer](./screenshots/file-explorer.png)
+![File Explorer](./public/images/file-explorer.png)
 
 _Intuitive file explorer interface with drag-and-drop uploads, folder navigation, and real-time progress tracking_
 

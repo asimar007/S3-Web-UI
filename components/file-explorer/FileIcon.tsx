@@ -49,7 +49,9 @@ export default function FileIcon({ fileName, size = "md" }: FileIconProps) {
       return <FileSpreadsheet className={`text-green-400 ${sizeClass}`} />;
     }
     // Archives - Yellow
-    else if (["zip", "rar", "7z", "tar", "gz", "bz2"].includes(fileExtension)) {
+    else if (
+      ["zip", "rar", "7z", "tar", "gz", "bz2", "md"].includes(fileExtension)
+    ) {
       return <Archive className={`text-yellow-400 ${sizeClass}`} />;
     }
     // Videos - Purple
