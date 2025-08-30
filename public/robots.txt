@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Disallow authentication and API routes
+Disallow: /api/
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /dashboard
+
+# Sitemap location
+Sitemap: https://s3buddy.icu/sitemap.xml
