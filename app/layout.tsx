@@ -89,11 +89,41 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "S3 Buddy",
+    description:
+      "Modern, secure AWS S3 file manager with enterprise-grade security. Beautiful interface for S3 bucket management, file uploads, downloads, and organization.",
+    url: "https://s3buddy.icu",
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "Web Browser",
+    author: {
+      "@type": "Individual",
+      name: "Asim SK",
+      url: "https://github.com/asimar007/S3-Web-UI",
+    },
+    softwareVersion: "1.0",
+    datePublished: "2025",
+    featureList: [
+      "AWS S3 bucket management",
+      "Secure file uploads and downloads",
+      "Enterprise-grade security",
+      "Modern user interface",
+      "Drag and drop file uploads",
+      "Folder organization",
+      "Real-time progress tracking",
+    ],
+  };
+
   return (
     <ClerkProvider>
       <html lang="en">
-        <hedy
-          <StructuredData />
+        <head>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          />
         </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
