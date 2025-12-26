@@ -2,10 +2,21 @@ import { NextResponse, NextRequest } from "next/server";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getUserS3Client } from "@/lib/s3-client";
 
+import { auth } from "@clerk/nextjs/server";
+import { validateKey } from "@/lib/utils";
+
 export async function DELETE(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const key = request.nextUrl.searchParams.get("key");
-  if (!key) {
-    return NextResponse.json({ error: "Key is required" }, { status: 400 });
+  if (!key || !validateKey(key)) {
+    return NextResponse.json(
+      { error: "Invalid key or path traversal attempt" },
+      { status: 400 }
+    );
   }
 
   const s3Config = await getUserS3Client();
