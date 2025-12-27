@@ -1,10 +1,10 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { PutBucketCorsCommand } from "@aws-sdk/client-s3";
 import { getUserS3Client } from "@/lib/s3-client";
 
 import { auth } from "@clerk/nextjs/server";
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -19,14 +19,23 @@ export async function POST(request: NextRequest) {
   }
 
   const { client, bucketName } = s3Config;
-  const origin = request.headers.get("origin") || "http://localhost:3000";
+
+  // Define trusted origins
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "https://www.s3buddy.icu",
+    "https://s3buddy.icu",
+  ];
+
+  // Deduplicate origins
+  const uniqueOrigins = [...new Set(allowedOrigins)];
 
   const corsConfiguration = {
     CORSRules: [
       {
         AllowedHeaders: ["*"],
         AllowedMethods: ["GET", "PUT", "POST", "DELETE", "HEAD"],
-        AllowedOrigins: ["http://localhost:3000", origin],
+        AllowedOrigins: uniqueOrigins,
         ExposeHeaders: ["ETag"],
         MaxAgeSeconds: 3000,
       },
@@ -42,7 +51,7 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     success: true,
-    message: `CORS configured for bucket: ${bucketName}`,
+    message: "CORS configured successfully",
     corsRules: corsConfiguration.CORSRules,
   });
 }

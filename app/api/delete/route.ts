@@ -39,10 +39,10 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `File deleted: ${key}`,
+      message: `File deleted successfully`,
     });
   } catch (error) {
-    console.error("Delete error:", error);
+    console.error("Delete operation failed for user:", userId);
     return NextResponse.json(
       { error: "Failed to delete file" },
       { status: 500 }

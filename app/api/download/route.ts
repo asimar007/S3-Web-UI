@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       headers,
     });
   } catch (error) {
-    console.error("Download error:", error);
+    console.error("Download operation failed for user:", userId);
     return NextResponse.json(
       { error: "Failed to download file" },
       { status: 500 }
