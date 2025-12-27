@@ -11,7 +11,7 @@ export default function FooterSection() {
           <div className="my-6 flex flex-wrap justify-center gap-4 text-sm">
             {/* GitHub */}
             <Link
-              href="https://github.com/asimar007"
+              href="https://github.com/asimar007/S3-Web-UI"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub"
@@ -63,7 +63,7 @@ export default function FooterSection() {
 
           <div className="border-t border-border pt-6 mt-6">
             <span className="text-muted-foreground block text-center text-sm">
-              © {new Date().getFullYear()} S3 Buddy. All rights reserved.
+              Built with ❤️ by Asim
             </span>
           </div>
         </div>
