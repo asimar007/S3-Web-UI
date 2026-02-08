@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { SignInButton } from "@clerk/nextjs";
@@ -24,7 +25,6 @@ const NavBar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [corsLoading, setCorsLoading] = useState(false);
-  const [corsMessage, setCorsMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,7 +47,6 @@ const NavBar = () => {
     if (corsLoading) return;
 
     setCorsLoading(true);
-    setCorsMessage(null);
 
     const response = await fetch("/api/cors-setup", {
       method: "POST",
@@ -56,11 +55,9 @@ const NavBar = () => {
     const data = await response.json();
 
     if (response.ok) {
-      setCorsMessage("✅ CORS configured successfully!");
-      setTimeout(() => setCorsMessage(null), 3000);
+      toast.success("CORS configured successfully!");
     } else {
-      setCorsMessage(`❌ ${data.error || "CORS setup failed"}`);
-      setTimeout(() => setCorsMessage(null), 5000);
+      toast.error(data.error || "CORS setup failed");
     }
 
     setCorsLoading(false);
@@ -80,12 +77,6 @@ const NavBar = () => {
                 "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5",
             )}
           >
-            {/* CORS Status Message */}
-            {corsMessage && user && (
-              <div className="mb-4 p-3 rounded-lg bg-background/90 backdrop-blur-sm border text-sm text-center text-foreground">
-                {corsMessage}
-              </div>
-            )}
             {/* Navbar */}
             <div className="relative flex flex-wrap items-center justify-between gap-4 sm:gap-6 py-3 lg:gap-0 lg:py-4">
               <div className="flex w-full justify-between lg:w-auto">
