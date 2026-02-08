@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Key, Database, Globe, Folder } from "lucide-react";
-import Image from "next/image";
 
 interface CredentialSetupProps {
   onSetupComplete: () => void;

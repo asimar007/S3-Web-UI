@@ -7,6 +7,12 @@ import { Settings, Globe, Loader2, Menu, X, Info } from "lucide-react";
 import CredentialEditModal from "@/components/credential-edit-modal";
 import Image from "next/image";
 import { HyperText } from "@/components/magicui/hyper-text";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { cn } from "@/lib/utils";
 import { SignInButton } from "@clerk/nextjs";
@@ -19,7 +25,6 @@ const NavBar = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [corsLoading, setCorsLoading] = useState(false);
   const [corsMessage, setCorsMessage] = useState<string | null>(null);
-  const [showCorsTooltip, setShowCorsTooltip] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,17 +33,6 @@ const NavBar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Auto-hide CORS tooltip after 5 seconds
-  useEffect(() => {
-    if (showCorsTooltip) {
-      const timer = setTimeout(() => {
-        setShowCorsTooltip(false);
-      }, 5000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [showCorsTooltip]);
 
   const handleUpdateComplete = () => {
     window.location.reload();
@@ -133,27 +127,31 @@ const NavBar = () => {
                   <>
                     {/* CORS Info Tooltip - LEFT side */}
                     <div className="relative">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowCorsTooltip(!showCorsTooltip)}
-                        className="p-1 h-9 w-6 text-muted-foreground hover:text-accent-foreground hover:bg-background/50 transition-colors"
-                      >
-                        <Info className="w-6 h-6" />
-                      </Button>
-
-                      {showCorsTooltip && (
-                        <div className="absolute top-8 left-0 z-50 w-64 p-3 bg-background border border-border rounded-lg shadow-lg">
-                          <div className="text-xs text-foreground font-medium mb-1">
-                            What is CORS Setup?
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Just click and go - automatic CORS setup in seconds!
-                            That&apos;s it! 🎉
-                          </div>
-                        </div>
-                      )}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="p-1 h-9 w-6 text-muted-foreground hover:text-accent-foreground hover:bg-background/50 transition-colors"
+                            >
+                              <Info className="w-6 h-6" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" align="start">
+                            <div className="flex flex-col gap-1 max-w-[250px]">
+                              <div className="text-sm font-medium">
+                                What is CORS Setup?
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Just click and go - automatic CORS setup in
+                                seconds! That&apos;s it! 🎉
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
 
                     <Button
@@ -250,31 +248,7 @@ const NavBar = () => {
                             {corsLoading ? "Setting up CORS..." : "Setup CORS"}
                           </span>
                         </Button>
-
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowCorsTooltip(!showCorsTooltip)}
-                          className="p-2 h-8 w-8 text-muted-foreground hover:text-accent-foreground hover:bg-background/50 transition-colors flex-shrink-0"
-                        >
-                          <Info className="w-4 h-4" />
-                        </Button>
                       </div>
-
-                      {/* Mobile Tooltip Content */}
-                      {showCorsTooltip && (
-                        <div className="w-full p-3 bg-muted/50 border border-border rounded-lg mb-2">
-                          <div className="text-xs text-foreground font-medium mb-1">
-                            What is CORS Setup?
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Configure Cross-Origin Resource Sharing (CORS)
-                            settings for your S3 bucket to enable web access and
-                            file operations from your browser.
-                          </div>
-                        </div>
-                      )}
 
                       <Button
                         variant="ghost"

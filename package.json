@@ -28,6 +28,7 @@
     "lucide-react": "^0.536.0",
     "motion": "^12.23.12",
     "next": "15.4.10",
+    "radix-ui": "^1.4.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "rough-notation": "^0.5.1",
