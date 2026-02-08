@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import NavBar from "@/components/nav";
 import FileExplorer from "@/components/file-explorer";
 import CredentialSetup from "@/components/credential-setup";
 import { Database } from "lucide-react";
@@ -66,8 +65,6 @@ export default function AuthenticatedApp() {
         <div className="absolute top-1/3 -left-40 w-60 h-60 bg-primary/3 rounded-full blur-3xl"></div>
         <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-primary/4 rounded-full blur-2xl"></div>
       </div>
-
-      <NavBar />
 
       <main className="relative z-10 w-full px-4 sm:px-6 pt-20 sm:pt-24 pb-8">
         {/* Hero Header Section */}

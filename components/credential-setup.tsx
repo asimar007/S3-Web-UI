@@ -62,11 +62,11 @@ export default function CredentialSetup({
         if (corsResponse.ok) {
           console.log(
             "CORS configured automatically for bucket:",
-            formData.bucketName
+            formData.bucketName,
           );
         } else {
           console.warn(
-            "CORS setup failed, but credentials were saved successfully"
+            "CORS setup failed, but credentials were saved successfully",
           );
         }
       } catch (corsError) {
@@ -113,30 +113,6 @@ export default function CredentialSetup({
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="relative z-20 bg-transparent">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg overflow-hidden">
-                <Image
-                  src="/images/S3.png"
-                  alt="S3 Logo"
-                  width={32}
-                  height={32}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div className="flex flex-col">
-                <h1 className="text-lg font-bold text-foreground tracking-tight leading-none">
-                  S3 <span className="text-primary">Buddy</span>
-                </h1>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       <div className="flex items-center justify-center p-4 pt-16">
         <Card className="w-full max-w-lg shadow-xl border bg-background/95 backdrop-blur-sm">
           <CardHeader>
