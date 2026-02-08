@@ -10,6 +10,7 @@ import { HyperText } from "@/components/magicui/hyper-text";
 
 import { cn } from "@/lib/utils";
 import { SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
 
 const NavBar = () => {
   const { user } = useUser();
@@ -82,7 +83,7 @@ const NavBar = () => {
             className={cn(
               "mx-auto mt-2 max-w-6xl px-4 sm:px-6 transition-all duration-200 ease-out lg:px-12",
               isScrolled &&
-                "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5"
+                "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5",
             )}
           >
             {/* CORS Status Message */}
@@ -94,7 +95,10 @@ const NavBar = () => {
             {/* Navbar */}
             <div className="relative flex flex-wrap items-center justify-between gap-4 sm:gap-6 py-3 lg:gap-0 lg:py-4">
               <div className="flex w-full justify-between lg:w-auto">
-                <div className="flex items-center gap-2 sm:gap-3">
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 sm:gap-3"
+                >
                   <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-xl overflow-hidden">
                     <Image
                       src="/images/S3.png"
@@ -109,7 +113,7 @@ const NavBar = () => {
                       <HyperText>S3 Buddy</HyperText>
                     </h1>
                   </div>
-                </div>
+                </Link>
 
                 {/* Mobile menu button - show for both authenticated and unauthenticated users */}
                 <button
