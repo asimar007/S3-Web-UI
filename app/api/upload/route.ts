@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { getUserS3Client } from "@/lib/s3-client";
+import { getS3Client } from "@/lib/s3-client";
 
 import { auth } from "@clerk/nextjs/server";
 import { validateKey } from "@/lib/utils";
@@ -16,18 +16,18 @@ export async function GET(request: NextRequest) {
   if (!key || !validateKey(key)) {
     return NextResponse.json(
       { error: "Invalid key or path traversal attempt" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  const s3Config = await getUserS3Client();
+  const s3Config = await getS3Client(request);
 
   if (!s3Config) {
     return NextResponse.json(
       {
         error: "No S3 credentials found. Please set up your AWS credentials.",
       },
-      { status: 404 }
+      { status: 404 },
     );
   }
 

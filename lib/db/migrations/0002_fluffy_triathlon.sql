@@ -1,0 +1,1 @@
+ALTER TABLE "users" DROP COLUMN "vault_verification_token";

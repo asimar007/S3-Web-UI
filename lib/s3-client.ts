@@ -1,21 +1,32 @@
+import { NextRequest } from "next/server";
 import { S3Client } from "@aws-sdk/client-s3";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db/connection";
 import { users, userS3Credentials } from "@/lib/db/schema";
-import { decrypt } from "@/lib/encryption";
 import { eq } from "drizzle-orm";
 
-export async function getUserS3Client(): Promise<{
+export async function getS3Client(req: NextRequest): Promise<{
   client: S3Client;
   bucketName: string;
 } | null> {
   const { userId } = await auth();
   if (!userId) return null;
 
+  // 1. Get credentials from Headers (Zero-Knowledge)
+  const accessKeyId = req.headers.get("x-aws-access-key-id");
+  const secretAccessKey = req.headers.get("x-aws-secret-access-key");
+
+  if (!accessKeyId || !secretAccessKey) {
+    console.error(
+      "Missing AWS credentials in headers. Keys present:",
+      [...req.headers.keys()].filter((k) => k.startsWith("x-aws")),
+    );
+    return null;
+  }
+
+  // 2. Get Region & Bucket from DB (Stored in plaintext)
   const result = await db
     .select({
-      awsAccessKeyId: userS3Credentials.awsAccessKeyId,
-      awsSecretAccessKey: userS3Credentials.awsSecretAccessKey,
       awsRegion: userS3Credentials.awsRegion,
       bucketName: userS3Credentials.bucketName,
       isActive: userS3Credentials.isActive,
@@ -25,19 +36,25 @@ export async function getUserS3Client(): Promise<{
     .where(eq(users.clerkUserId, userId))
     .limit(1);
 
-  if (result.length === 0 || !result[0].isActive) {
+  if (result.length === 0) {
+    console.error("No S3 credentials record found in DB for user", userId);
     return null;
   }
 
-  const credentials = result[0];
+  if (!result[0].isActive) {
+    console.error("S3 credentials record is inactive for user", userId);
+    return null;
+  }
+
+  const { awsRegion, bucketName } = result[0];
 
   const client = new S3Client({
-    region: credentials.awsRegion,
+    region: awsRegion,
     credentials: {
-      accessKeyId: decrypt(credentials.awsAccessKeyId),
-      secretAccessKey: decrypt(credentials.awsSecretAccessKey),
+      accessKeyId,
+      secretAccessKey,
     },
   });
 
-  return { client, bucketName: credentials.bucketName };
+  return { client, bucketName };
 }

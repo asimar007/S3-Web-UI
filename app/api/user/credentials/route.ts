@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db/connection";
 import { users, userS3Credentials } from "@/lib/db/schema";
-import { decrypt } from "@/lib/encryption";
 import { eq } from "drizzle-orm";
 
 export async function GET() {
@@ -13,8 +12,8 @@ export async function GET() {
 
   const result = await db
     .select({
-      awsAccessKeyId: userS3Credentials.awsAccessKeyId,
-      awsSecretAccessKey: userS3Credentials.awsSecretAccessKey,
+      encryptedBlob: userS3Credentials.encryptedBlob,
+      vaultSalt: userS3Credentials.vaultSalt,
       awsRegion: userS3Credentials.awsRegion,
       bucketName: userS3Credentials.bucketName,
       isActive: userS3Credentials.isActive,
@@ -27,7 +26,7 @@ export async function GET() {
   if (result.length === 0) {
     return NextResponse.json(
       { error: "No credentials found" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -36,13 +35,13 @@ export async function GET() {
   if (!credentials.isActive) {
     return NextResponse.json(
       { error: "Credentials are inactive" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
   return NextResponse.json({
-    awsAccessKeyId: decrypt(credentials.awsAccessKeyId),
-    awsSecretAccessKey: decrypt(credentials.awsSecretAccessKey),
+    encryptedBlob: credentials.encryptedBlob,
+    vaultSalt: credentials.vaultSalt,
     awsRegion: credentials.awsRegion,
     bucketName: credentials.bucketName,
   });

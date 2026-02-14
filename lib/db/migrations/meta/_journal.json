@@ -8,6 +8,27 @@
       "when": 1754311453085,
       "tag": "0000_modern_manta",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770612550109,
+      "tag": "0001_abnormal_logan",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770660362938,
+      "tag": "0002_fluffy_triathlon",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770661101165,
+      "tag": "0003_fair_captain_america",
+      "breakpoints": true
     }
   ]
 }

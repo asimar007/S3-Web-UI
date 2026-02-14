@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { useVault } from "@/components/vault-provider";
 
 const NavBar = () => {
   const { user } = useUser();
@@ -38,6 +39,8 @@ const NavBar = () => {
     window.location.reload();
   };
 
+  const { credentials } = useVault(); // Get credentials from Vault
+
   const handleCorsSetup = async (e?: React.MouseEvent<HTMLButtonElement>) => {
     if (e) {
       e.preventDefault();
@@ -46,21 +49,35 @@ const NavBar = () => {
 
     if (corsLoading) return;
 
-    setCorsLoading(true);
-
-    const response = await fetch("/api/cors-setup", {
-      method: "POST",
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      toast.success("CORS configured successfully!");
-    } else {
-      toast.error(data.error || "CORS setup failed");
+    if (!credentials) {
+      toast.error("Please unlock your vault first.");
+      return;
     }
 
-    setCorsLoading(false);
+    setCorsLoading(true);
+
+    try {
+      const response = await fetch("/api/cors-setup", {
+        method: "POST",
+        headers: {
+          "x-aws-access-key-id": credentials.accessKeyId,
+          "x-aws-secret-access-key": credentials.secretAccessKey,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("CORS configured successfully!");
+      } else {
+        toast.error(data.error || "CORS setup failed");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred during CORS setup");
+    } finally {
+      setCorsLoading(false);
+    }
   };
 
   return (

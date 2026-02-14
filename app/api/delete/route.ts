@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { getUserS3Client } from "@/lib/s3-client";
+import { getS3Client } from "@/lib/s3-client";
 
 import { auth } from "@clerk/nextjs/server";
 import { validateKey } from "@/lib/utils";
@@ -15,15 +15,15 @@ export async function DELETE(request: NextRequest) {
   if (!key || !validateKey(key)) {
     return NextResponse.json(
       { error: "Invalid key or path traversal attempt" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  const s3Config = await getUserS3Client();
+  const s3Config = await getS3Client(request);
   if (!s3Config) {
     return NextResponse.json(
       { error: "No S3 credentials found" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -45,7 +45,7 @@ export async function DELETE(request: NextRequest) {
     console.error("Delete operation failed for user:", userId);
     return NextResponse.json(
       { error: "Failed to delete file" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

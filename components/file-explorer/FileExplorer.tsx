@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import BucketInfo from "./BucketInfo";
 import StatsBar from "./StatsBar";
+import { useVault } from "@/components/vault-provider";
 import FileListHeader from "./FileListHeader";
 import FolderItem from "./FolderItem";
 import FileItem from "./FileItem";
@@ -16,15 +17,15 @@ import { S3Response, BucketInfoType } from "./types";
 import { formatFileSize } from "./utils";
 
 export default function FileExplorer() {
-  const currentPath = ""; // Always empty string since no navigation
+  const currentPath = "";
   const [data, setData] = useState<S3Response>({ files: [], folders: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [folderContents, setFolderContents] = useState<Map<string, S3Response>>(
-    new Map()
+    new Map(),
   );
   const [loadingFolders, setLoadingFolders] = useState<Set<string>>(new Set());
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
@@ -32,13 +33,41 @@ export default function FileExplorer() {
   const [bucketInfo, setBucketInfo] = useState<BucketInfoType | null>(null);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
 
+  const { credentials } = useVault();
+
+  useEffect(() => {
+    if (credentials) {
+      fetchObjects(currentPath);
+      fetchBucketInfo();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [credentials]);
+
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    if (!credentials) {
+      console.error("authenticatedFetch called without credentials");
+      throw new Error("Vault is locked or missing credentials");
+    }
+
+    const headers = {
+      ...options.headers,
+      "x-aws-access-key-id": credentials.accessKeyId,
+      "x-aws-secret-access-key": credentials.secretAccessKey,
+    };
+
+    // console.log("Sending authenticated request to", url, "with headers", Object.keys(headers));
+
+    return fetch(url, { ...options, headers });
+  };
+
   const fetchObjects = async (prefix: string = "") => {
+    if (!credentials) return;
     setLoading(true);
     setError(null);
     const url = `/api/objects${
       prefix ? `?prefix=${encodeURIComponent(prefix)}` : ""
     }`;
-    const response = await fetch(url);
+    const response = await authenticatedFetch(url);
     if (!response.ok) {
       const errorData = await response.json();
       setError(errorData.error || "Failed to fetch objects");
@@ -62,17 +91,13 @@ export default function FileExplorer() {
     }
   };
 
-  useEffect(() => {
-    fetchObjects(currentPath);
-    fetchBucketInfo();
-  }, []); // No dependencies needed since currentPath is static
-
   const fetchFolderContents = async (folderPath: string) => {
     if (folderContents.has(folderPath)) return;
+    if (!credentials) return;
 
     setLoadingFolders((prev) => new Set(prev).add(folderPath));
     const url = `/api/objects?prefix=${encodeURIComponent(folderPath)}`;
-    const response = await fetch(url);
+    const response = await authenticatedFetch(url);
     if (response.ok) {
       const result: S3Response = await response.json();
       setFolderContents((prev) => new Map(prev).set(folderPath, result));
@@ -125,17 +150,17 @@ export default function FileExplorer() {
   };
 
   const handleFileUpload = async (folderPath: string, file: File) => {
+    if (!credentials) return;
     const fullKey = `${folderPath}${file.name}`;
     setUploadingFiles((prev) => new Set(prev).add(fullKey));
 
     // Get presigned URL
-    const uploadResponse = await fetch(
-      `/api/upload?key=${encodeURIComponent(fullKey)}`
+    const uploadResponse = await authenticatedFetch(
+      `/api/upload?key=${encodeURIComponent(fullKey)}`,
     );
     if (uploadResponse.ok) {
       const { url } = await uploadResponse.json();
 
-      // Upload file using presigned URL
       const putResponse = await fetch(url, {
         method: "PUT",
         body: file,
@@ -185,9 +210,10 @@ export default function FileExplorer() {
   };
 
   const handleFileDownload = async (fileKey: string) => {
+    if (!credentials) return;
     // Fetch the file directly from our API
-    const response = await fetch(
-      `/api/download?key=${encodeURIComponent(fileKey)}`
+    const response = await authenticatedFetch(
+      `/api/download?key=${encodeURIComponent(fileKey)}`,
     );
 
     if (response.ok) {
@@ -209,6 +235,7 @@ export default function FileExplorer() {
   };
 
   const handleFileDelete = async (fileKey: string) => {
+    if (!credentials) return;
     if (
       !confirm(`Are you sure you want to delete "${fileKey.split("/").pop()}"?`)
     ) {
@@ -218,11 +245,11 @@ export default function FileExplorer() {
     setDeletingFiles((prev) => new Set(prev).add(fileKey));
 
     try {
-      const response = await fetch(
+      const response = await authenticatedFetch(
         `/api/delete?key=${encodeURIComponent(fileKey)}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       if (response.ok) {
@@ -244,6 +271,7 @@ export default function FileExplorer() {
         alert(`Failed to delete file: ${errorData.error}`);
       }
     } catch (error) {
+      console.error(error);
       alert("Failed to delete file. Please try again.");
     } finally {
       setDeletingFiles((prev) => {
@@ -255,14 +283,15 @@ export default function FileExplorer() {
   };
 
   const handleCreateFolder = async (folderName: string) => {
+    if (!credentials) return;
     const folderKey = `${currentPath}${folderName}/`;
 
     // Create an empty object to represent the folder
-    const response = await fetch(
+    const response = await authenticatedFetch(
       `/api/upload?key=${encodeURIComponent(folderKey)}`,
       {
         method: "GET",
-      }
+      },
     );
 
     if (response.ok) {

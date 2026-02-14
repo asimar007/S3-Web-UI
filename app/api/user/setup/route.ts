@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db/connection";
 import { users, userS3Credentials } from "@/lib/db/schema";
-import { encrypt } from "@/lib/encryption";
 import { eq } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
@@ -11,13 +10,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { awsAccessKeyId, awsSecretAccessKey, awsRegion, bucketName, email } =
+  const { encryptedBlob, vaultSalt, awsRegion, bucketName, email } =
     await request.json();
 
-  if (!awsAccessKeyId || !awsSecretAccessKey || !awsRegion || !bucketName) {
+  if (!encryptedBlob || !vaultSalt || !awsRegion || !bucketName) {
     return NextResponse.json(
       { error: "All fields are required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -46,17 +45,13 @@ export async function POST(request: NextRequest) {
     .where(eq(userS3Credentials.userId, user[0].id))
     .limit(1);
 
-  // Encrypt credentials
-  const encryptedAccessKey = encrypt(awsAccessKeyId);
-  const encryptedSecretKey = encrypt(awsSecretAccessKey);
-
   if (existingCredentials.length > 0) {
     // Update existing credentials
     await db
       .update(userS3Credentials)
       .set({
-        awsAccessKeyId: encryptedAccessKey,
-        awsSecretAccessKey: encryptedSecretKey,
+        encryptedBlob,
+        vaultSalt,
         awsRegion,
         bucketName,
         updatedAt: new Date(),
@@ -66,8 +61,8 @@ export async function POST(request: NextRequest) {
     // Insert new credentials
     await db.insert(userS3Credentials).values({
       userId: user[0].id,
-      awsAccessKeyId: encryptedAccessKey,
-      awsSecretAccessKey: encryptedSecretKey,
+      encryptedBlob,
+      vaultSalt,
       awsRegion,
       bucketName,
     });
