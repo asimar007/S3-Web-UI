@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 const BASE_URL = "https://s3buddy.icu";
-const OG_IMAGE = "/images/meta.png";
+const OG_IMAGE = "https://s3buddy.icu/images/meta.png";
 const TITLE = "S3 Buddy - Modern AWS S3 File Manager";
 const DESCRIPTION =
   "Modern, secure AWS S3 file manager with enterprise-grade security. Beautiful interface for S3 bucket management, file uploads, downloads, and organization. Alternative to AWS Console.";
