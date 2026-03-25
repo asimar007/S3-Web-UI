@@ -26,15 +26,13 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <head>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
+        >
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
           />
-        </head>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
-        >
           <VaultProvider>
             <VaultUnlocker />
             <div className="min-h-screen w-full bg-background">{children}</div>
