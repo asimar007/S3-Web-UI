@@ -1,16 +1,9 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { getS3Client } from "@/lib/s3-client";
-
-import { auth } from "@clerk/nextjs/server";
+import { withS3 } from "@/lib/s3-client";
 import { validateKey } from "@/lib/utils";
 
-export async function DELETE(request: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const DELETE = withS3(async (request, { client, bucketName, userId }) => {
   const key = request.nextUrl.searchParams.get("key");
   if (!key || !validateKey(key)) {
     return NextResponse.json(
@@ -19,33 +12,19 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
-  const s3Config = await getS3Client(request);
-  if (!s3Config) {
-    return NextResponse.json(
-      { error: "No S3 credentials found" },
-      { status: 404 },
-    );
-  }
-
-  const { client, bucketName } = s3Config;
-
   try {
-    const command = new DeleteObjectCommand({
-      Bucket: bucketName,
-      Key: key,
-    });
-
-    await client.send(command);
-
+    await client.send(
+      new DeleteObjectCommand({ Bucket: bucketName, Key: key }),
+    );
     return NextResponse.json({
       success: true,
-      message: `File deleted successfully`,
+      message: "File deleted successfully",
     });
   } catch (error) {
-    console.error("Delete operation failed for user:", userId);
+    console.error("Delete operation failed for user:", userId, error);
     return NextResponse.json(
       { error: "Failed to delete file" },
       { status: 500 },
     );
   }
-}
+});

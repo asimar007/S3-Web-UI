@@ -24,7 +24,19 @@ import { HyperText } from "@/components/magicui/hyper-text";
 import { Lens } from "@/components/magicui/lens";
 import { Highlighter } from "@/components/magicui/highlighter";
 
-import { LandingNav } from "@/components/landing-nav";
+import NavBar from "@/components/nav";
+
+const scrollTo = (id: string) => () =>
+  document.getElementById(id)?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+
+const landingMenuItems = [
+  { name: "Features", onClick: scrollTo("features-section") },
+  { name: "Solutions", onClick: scrollTo("solutions-section") },
+  { name: "About", onClick: scrollTo("about-section") },
+];
 
 const transitionVariants = {
   item: {
@@ -49,7 +61,7 @@ const transitionVariants = {
 export function HeroSection() {
   return (
     <>
-      <LandingNav />
+      <NavBar homeHref="/" scrollThreshold={50} menuItems={landingMenuItems} />
       <main className="overflow-hidden">
         <div
           aria-hidden

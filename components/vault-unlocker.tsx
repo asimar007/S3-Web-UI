@@ -6,15 +6,8 @@ import { ShieldCheck, ShieldX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function VaultUnlocker() {
-  const {
-    isLocked,
-    isLoading,
-    password,
-    setPassword,
-    error,
-    unlocking,
-    handleUnlock,
-  } = useVaultUnlocker();
+  const { isLocked, isLoading, password, setPassword, error, handleUnlock } =
+    useVaultUnlocker();
 
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -95,7 +88,7 @@ export default function VaultUnlocker() {
             >
               {Array.from({ length: 4 }).map((_, i) => {
                 const isFilled = i < password.length;
-                const isActive = i === password.length && !unlocking;
+                const isActive = i === password.length;
 
                 return (
                   <div
@@ -109,9 +102,7 @@ export default function VaultUnlocker() {
                       isFilled && !error && "border-primary/50 bg-primary/5",
                       isFilled && error && "border-destructive/50 bg-destructive/5",
                       // Empty unfocused
-                      !isFilled && !isActive && "border-border bg-muted/30",
-                      // Decrypting fade
-                      unlocking && isFilled && "opacity-50"
+                      !isFilled && !isActive && "border-border bg-muted/30"
                     )}
                   >
                     {isFilled ? (
@@ -119,8 +110,7 @@ export default function VaultUnlocker() {
                       <div
                         className={cn(
                           "w-2.5 h-2.5 rounded-full transition-colors",
-                          error ? "bg-destructive" : "bg-primary",
-                          unlocking && "animate-pulse"
+                          error ? "bg-destructive" : "bg-primary"
                         )}
                       />
                     ) : isActive ? (
@@ -134,12 +124,6 @@ export default function VaultUnlocker() {
                 );
               })}
             </div>
-
-            {unlocking && (
-              <p className="text-xs text-muted-foreground animate-pulse mb-2">
-                Decrypting…
-              </p>
-            )}
 
             <p className="text-[11px] text-muted-foreground/50 mt-4">
               Decrypted locally · never sent to server

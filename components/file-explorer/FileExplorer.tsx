@@ -13,11 +13,10 @@ import UploadProgress from "./UploadProgress";
 import EmptyState from "./EmptyState";
 import CreateFolderButton from "./CreateFolderButton";
 import CreateFolderModal from "./CreateFolderModal";
-import { S3Response, BucketInfoType } from "./types";
+import { S3Response } from "./types";
 import { formatFileSize } from "./utils";
 
 export default function FileExplorer() {
-  const currentPath = "";
   const [data, setData] = useState<S3Response>({ files: [], folders: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,44 +29,37 @@ export default function FileExplorer() {
   const [loadingFolders, setLoadingFolders] = useState<Set<string>>(new Set());
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
-  const [bucketInfo, setBucketInfo] = useState<BucketInfoType | null>(null);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
 
-  const { credentials } = useVault();
+  const { credentials, bucket } = useVault();
 
   useEffect(() => {
     if (credentials) {
-      fetchObjects(currentPath);
-      fetchBucketInfo();
+      fetchObjects();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [credentials]);
 
   const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
     if (!credentials) {
-      console.error("authenticatedFetch called without credentials");
       throw new Error("Vault is locked or missing credentials");
     }
 
-    const headers = {
-      ...options.headers,
-      "x-aws-access-key-id": credentials.accessKeyId,
-      "x-aws-secret-access-key": credentials.secretAccessKey,
-    };
-
-    // console.log("Sending authenticated request to", url, "with headers", Object.keys(headers));
-
-    return fetch(url, { ...options, headers });
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        "x-aws-access-key-id": credentials.accessKeyId,
+        "x-aws-secret-access-key": credentials.secretAccessKey,
+      },
+    });
   };
 
-  const fetchObjects = async (prefix: string = "") => {
+  const fetchObjects = async () => {
     if (!credentials) return;
     setLoading(true);
     setError(null);
-    const url = `/api/objects${
-      prefix ? `?prefix=${encodeURIComponent(prefix)}` : ""
-    }`;
-    const response = await authenticatedFetch(url);
+    const response = await authenticatedFetch("/api/objects");
     if (!response.ok) {
       const errorData = await response.json();
       setError(errorData.error || "Failed to fetch objects");
@@ -80,24 +72,14 @@ export default function FileExplorer() {
     setLoading(false);
   };
 
-  const fetchBucketInfo = async () => {
-    const response = await fetch("/api/user/credentials");
-    if (response.ok) {
-      const data = await response.json();
-      setBucketInfo({
-        bucketName: data.bucketName,
-        awsRegion: data.awsRegion,
-      });
-    }
-  };
-
   const fetchFolderContents = async (folderPath: string) => {
     if (folderContents.has(folderPath)) return;
     if (!credentials) return;
 
     setLoadingFolders((prev) => new Set(prev).add(folderPath));
-    const url = `/api/objects?prefix=${encodeURIComponent(folderPath)}`;
-    const response = await authenticatedFetch(url);
+    const response = await authenticatedFetch(
+      `/api/objects?prefix=${encodeURIComponent(folderPath)}`,
+    );
     if (response.ok) {
       const result: S3Response = await response.json();
       setFolderContents((prev) => new Map(prev).set(folderPath, result));
@@ -110,9 +92,7 @@ export default function FileExplorer() {
   };
 
   const toggleFolder = async (folderPath: string) => {
-    const isExpanded = expandedFolders.has(folderPath);
-
-    if (isExpanded) {
+    if (expandedFolders.has(folderPath)) {
       setExpandedFolders((prev) => {
         const newSet = new Set(prev);
         newSet.delete(folderPath);
@@ -128,25 +108,32 @@ export default function FileExplorer() {
     const contents = folderContents.get(folderPath);
     if (!contents) return 0;
 
-    // Sum up all file sizes in this folder
     const fileSize = contents.files
       .filter((file) => file.Size > 0)
       .reduce((total, file) => total + file.Size, 0);
 
-    // Recursively calculate sizes of nested folders
-    const nestedFolderSize = contents.folders.reduce((total, nestedFolder) => {
-      return total + calculateFolderSize(nestedFolder);
-    }, 0);
+    const nestedFolderSize = contents.folders.reduce(
+      (total, nestedFolder) => total + calculateFolderSize(nestedFolder),
+      0,
+    );
 
     return fileSize + nestedFolderSize;
   };
 
   const getFolderDisplaySize = (folderPath: string): string => {
-    const contents = folderContents.get(folderPath);
-    if (!contents) return "—";
-
+    if (!folderContents.get(folderPath)) return "—";
     const totalSize = calculateFolderSize(folderPath);
     return totalSize > 0 ? formatFileSize(totalSize) : "—";
+  };
+
+  const refreshFolder = async (folderPath: string) => {
+    if (!folderContents.has(folderPath)) return;
+    setFolderContents((prev) => {
+      const newMap = new Map(prev);
+      newMap.delete(folderPath);
+      return newMap;
+    });
+    await fetchFolderContents(folderPath);
   };
 
   const handleFileUpload = async (folderPath: string, file: File) => {
@@ -154,7 +141,6 @@ export default function FileExplorer() {
     const fullKey = `${folderPath}${file.name}`;
     setUploadingFiles((prev) => new Set(prev).add(fullKey));
 
-    // Get presigned URL
     const uploadResponse = await authenticatedFetch(
       `/api/upload?key=${encodeURIComponent(fullKey)}`,
     );
@@ -164,25 +150,13 @@ export default function FileExplorer() {
       const putResponse = await fetch(url, {
         method: "PUT",
         body: file,
-        headers: {
-          "Content-Type": file.type,
-        },
+        headers: { "Content-Type": file.type },
       });
 
       if (putResponse.ok) {
-        // Refresh the folder contents
-        if (folderContents.has(folderPath)) {
-          setFolderContents((prev) => {
-            const newMap = new Map(prev);
-            newMap.delete(folderPath);
-            return newMap;
-          });
-          await fetchFolderContents(folderPath);
-        }
-
-        // Refresh current directory if uploading to current path
-        if (folderPath === currentPath) {
-          await fetchObjects(currentPath);
+        await refreshFolder(folderPath);
+        if (folderPath === "") {
+          await fetchObjects();
         }
       }
     }
@@ -211,16 +185,12 @@ export default function FileExplorer() {
 
   const handleFileDownload = async (fileKey: string) => {
     if (!credentials) return;
-    // Fetch the file directly from our API
     const response = await authenticatedFetch(
       `/api/download?key=${encodeURIComponent(fileKey)}`,
     );
 
     if (response.ok) {
-      // Get the file as a blob
       const blob = await response.blob();
-
-      // Create object URL and trigger download
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = objectUrl;
@@ -228,8 +198,6 @@ export default function FileExplorer() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      // Clean up the object URL
       URL.revokeObjectURL(objectUrl);
     }
   };
@@ -247,25 +215,14 @@ export default function FileExplorer() {
     try {
       const response = await authenticatedFetch(
         `/api/delete?key=${encodeURIComponent(fileKey)}`,
-        {
-          method: "DELETE",
-        },
+        { method: "DELETE" },
       );
 
       if (response.ok) {
-        // Refresh the current directory
-        await fetchObjects(currentPath);
-
-        // Also refresh any folder contents that might contain this file
-        const folderPath = fileKey.substring(0, fileKey.lastIndexOf("/") + 1);
-        if (folderContents.has(folderPath)) {
-          setFolderContents((prev) => {
-            const newMap = new Map(prev);
-            newMap.delete(folderPath);
-            return newMap;
-          });
-          await fetchFolderContents(folderPath);
-        }
+        await fetchObjects();
+        await refreshFolder(
+          fileKey.substring(0, fileKey.lastIndexOf("/") + 1),
+        );
       } else {
         const errorData = await response.json();
         alert(`Failed to delete file: ${errorData.error}`);
@@ -284,31 +241,23 @@ export default function FileExplorer() {
 
   const handleCreateFolder = async (folderName: string) => {
     if (!credentials) return;
-    const folderKey = `${currentPath}${folderName}/`;
+    const folderKey = `${folderName}/`;
 
-    // Create an empty object to represent the folder
     const response = await authenticatedFetch(
       `/api/upload?key=${encodeURIComponent(folderKey)}`,
-      {
-        method: "GET",
-      },
     );
 
     if (response.ok) {
       const { url } = await response.json();
 
-      // Upload an empty object to create the folder
       const putResponse = await fetch(url, {
         method: "PUT",
         body: "",
-        headers: {
-          "Content-Type": "application/x-directory",
-        },
+        headers: { "Content-Type": "application/x-directory" },
       });
 
       if (putResponse.ok) {
-        // Refresh the current directory
-        await fetchObjects(currentPath);
+        await fetchObjects();
       }
     }
   };
@@ -325,7 +274,7 @@ export default function FileExplorer() {
     return (
       <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-md">
         <p className="text-destructive">Error: {error}</p>
-        <Button onClick={() => fetchObjects(currentPath)} className="mt-2">
+        <Button onClick={() => fetchObjects()} className="mt-2">
           Retry
         </Button>
       </div>
@@ -334,11 +283,10 @@ export default function FileExplorer() {
 
   return (
     <div className="w-full p-2 sm:p-4">
-      {/* Enhanced Breadcrumb and Navigation */}
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <BucketInfo bucketInfo={bucketInfo} />
+            <BucketInfo bucketInfo={bucket} />
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <CreateFolderButton
@@ -354,7 +302,7 @@ export default function FileExplorer() {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                triggerFileUpload(currentPath);
+                triggerFileUpload("");
               }}
               className="flex items-center gap-1 sm:gap-2 shadow-md hover:shadow-lg transition-all text-xs sm:text-sm"
             >
@@ -368,32 +316,27 @@ export default function FileExplorer() {
         <StatsBar data={data} uploadingFiles={uploadingFiles} />
       </div>
 
-      {/* Enhanced File and Folder List */}
       <div className="bg-background/95 backdrop-blur-sm rounded-xl shadow-lg border border-border overflow-hidden">
         <FileListHeader />
 
-        {/* Content */}
         <div className="divide-y">
-          {/* Folders */}
           {data.folders &&
             data.folders.map((folder) => (
               <FolderItem
                 key={folder}
                 folder={folder}
-                currentPath={currentPath}
-                isExpanded={expandedFolders.has(folder)}
-                isLoading={loadingFolders.has(folder)}
-                contents={folderContents.get(folder)}
+                expandedFolders={expandedFolders}
+                folderContents={folderContents}
+                loadingFolders={loadingFolders}
+                deletingFiles={deletingFiles}
                 onToggle={toggleFolder}
                 onUpload={triggerFileUpload}
                 onDownload={handleFileDownload}
                 onDelete={handleFileDelete}
                 getFolderDisplaySize={getFolderDisplaySize}
-                deletingFiles={deletingFiles}
               />
             ))}
 
-          {/* Main Files */}
           {data.files &&
             data.files
               .filter((file) => file.Size > 0)
@@ -401,7 +344,6 @@ export default function FileExplorer() {
                 <FileItem
                   key={file.Key}
                   file={file}
-                  currentPath={currentPath}
                   onDownload={handleFileDownload}
                   onDelete={handleFileDelete}
                   isDeleting={deletingFiles.has(file.Key)}
@@ -413,7 +355,7 @@ export default function FileExplorer() {
           <EmptyState
             data={data}
             uploadingFiles={uploadingFiles}
-            onUpload={() => triggerFileUpload(currentPath)}
+            onUpload={() => triggerFileUpload("")}
           />
         </div>
       </div>
@@ -422,7 +364,6 @@ export default function FileExplorer() {
         isOpen={isCreateFolderModalOpen}
         onClose={() => setIsCreateFolderModalOpen(false)}
         onCreateFolder={handleCreateFolder}
-        currentPath={currentPath || "root directory"}
       />
     </div>
   );

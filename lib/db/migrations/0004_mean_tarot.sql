@@ -1,0 +1,1 @@
+ALTER TABLE "user_s3_credentials" DROP COLUMN "is_active";

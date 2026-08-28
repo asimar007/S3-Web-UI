@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, serial } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -15,7 +15,6 @@ export const userS3Credentials = pgTable("user_s3_credentials", {
   vaultSalt: text("vault_salt"),
   awsRegion: text("aws_region").notNull(),
   bucketName: text("bucket_name").notNull(),
-  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

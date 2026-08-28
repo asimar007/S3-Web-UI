@@ -20,11 +20,8 @@ export const getFileExtension = (fileName: string): string => {
   return fileName.split(".").pop()?.toLowerCase() || "";
 };
 
-export const cleanFolderName = (
-  folder: string,
-  currentPath: string
-): string => {
-  return folder.replace(currentPath, "").replace("/", "");
+export const cleanFolderName = (folder: string, prefix: string): string => {
+  return folder.replace(prefix, "").replace("/", "");
 };
 
 export const truncateFileName = (

@@ -1,17 +1,10 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { getS3Client } from "@/lib/s3-client";
-
-import { auth } from "@clerk/nextjs/server";
+import { withS3 } from "@/lib/s3-client";
 import { validateKey } from "@/lib/utils";
 
-export async function GET(request: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withS3(async (request, { client, bucketName }) => {
   const key = request.nextUrl.searchParams.get("key");
   if (!key || !validateKey(key)) {
     return NextResponse.json(
@@ -20,24 +13,11 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const s3Config = await getS3Client(request);
+  const url = await getSignedUrl(
+    client,
+    new PutObjectCommand({ Bucket: bucketName, Key: key }),
+    { expiresIn: 3600 },
+  );
 
-  if (!s3Config) {
-    return NextResponse.json(
-      {
-        error: "No S3 credentials found. Please set up your AWS credentials.",
-      },
-      { status: 404 },
-    );
-  }
-
-  const { client, bucketName } = s3Config;
-
-  const command = new PutObjectCommand({
-    Bucket: bucketName,
-    Key: key,
-  });
-
-  const url = await getSignedUrl(client, command, { expiresIn: 3600 });
   return NextResponse.json({ url });
-}
+});

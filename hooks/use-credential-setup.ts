@@ -63,7 +63,6 @@ export function useCredentialSetup({
       );
 
       // 2. Send to Server (Server sees ONLY blob)
-      // Note: vaultVerificationToken logic has been removed as per previous refactor
       const payload = {
         encryptedBlob,
         vaultSalt,
@@ -86,7 +85,10 @@ export function useCredentialSetup({
       }
 
       // Update context and unlock
-      setVaultData(encryptedBlob, vaultSalt);
+      setVaultData(encryptedBlob, vaultSalt, {
+        bucketName: formData.bucketName,
+        awsRegion: formData.awsRegion,
+      });
       await unlockVault(vaultPassword);
 
       // 3. Auto-configure CORS (Optional but helpful)

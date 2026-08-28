@@ -1,3 +1,17 @@
+const BLOB_VERSION = 2;
+
+const toBase64 = (bytes: Uint8Array) =>
+  btoa(String.fromCharCode(...bytes));
+
+const fromBase64 = (s: string) =>
+  Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+// Vaults written before BLOB_VERSION 2 stored iv/data as hex. They must stay
+// readable: the server holds no plaintext copy, so a failed decrypt is a
+// permanent lockout for that user.
+const fromHex = (s: string) =>
+  Uint8Array.from(s.match(/.{1,2}/g)!, (b) => parseInt(b, 16));
+
 export async function deriveKey(
   password: string,
   salt: string,
@@ -29,33 +43,23 @@ export async function encryptVault(
   data: object,
   password: string,
 ): Promise<{ blob: string; salt: string }> {
-  const salt = window.crypto.getRandomValues(new Uint8Array(16));
-  const saltHex = Array.from(salt)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
-  const key = await deriveKey(password, saltHex);
+  const salt = toBase64(window.crypto.getRandomValues(new Uint8Array(16)));
+  const key = await deriveKey(password, salt);
   const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
-  const enc = new TextEncoder();
   const encrypted = await window.crypto.subtle.encrypt(
     { name: "AES-GCM", iv },
     key,
-    enc.encode(JSON.stringify(data)),
+    new TextEncoder().encode(JSON.stringify(data)),
   );
 
-  // Pack IV + Ciphertext
-  const ivHex = Array.from(iv)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-  const cipherArray = new Uint8Array(encrypted);
-  const cipherHex = Array.from(cipherArray)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
   return {
-    blob: JSON.stringify({ iv: ivHex, data: cipherHex }),
-    salt: saltHex,
+    blob: JSON.stringify({
+      v: BLOB_VERSION,
+      iv: toBase64(iv),
+      data: toBase64(new Uint8Array(encrypted)),
+    }),
+    salt,
   };
 }
 
@@ -64,25 +68,18 @@ export async function decryptVault(
   password: string,
   salt: string,
 ): Promise<{ awsAccessKeyId: string; awsSecretAccessKey: string }> {
-  const { iv: ivHex, data: cipherHex } = JSON.parse(blobString);
+  const { v, iv, data } = JSON.parse(blobString);
+  const decode = v === BLOB_VERSION ? fromBase64 : fromHex;
 
   const key = await deriveKey(password, salt);
 
-  const iv = new Uint8Array(
-    ivHex.match(/.{1,2}/g)!.map((byte: string) => parseInt(byte, 16)),
-  );
-  const cipher = new Uint8Array(
-    cipherHex.match(/.{1,2}/g)!.map((byte: string) => parseInt(byte, 16)),
-  );
-
   try {
     const decrypted = await window.crypto.subtle.decrypt(
-      { name: "AES-GCM", iv },
+      { name: "AES-GCM", iv: decode(iv) },
       key,
-      cipher,
+      decode(data),
     );
-    const dec = new TextDecoder();
-    return JSON.parse(dec.decode(decrypted));
+    return JSON.parse(new TextDecoder().decode(decrypted));
   } catch (error: unknown) {
     if (error instanceof Error && error.name === "OperationError") {
       throw new Error("Incorrect Password");

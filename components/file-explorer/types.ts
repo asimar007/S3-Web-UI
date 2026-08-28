@@ -13,3 +13,4 @@ export interface BucketInfoType {
   bucketName: string;
   awsRegion: string;
 }
+

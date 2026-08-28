@@ -1,37 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import FileExplorer from "@/components/file-explorer";
 import CredentialSetup from "@/components/credential-setup";
 import { Database } from "lucide-react";
 import { FlipText } from "@/components/magicui/flip-text";
 import { Highlighter } from "@/components/magicui/highlighter";
+import { useVault } from "@/components/vault-provider";
 
 export default function AuthenticatedApp() {
-  const [hasCredentials, setHasCredentials] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { hasCredentials, isLoading } = useVault();
+  const [setupComplete, setSetupComplete] = useState(false);
 
-  const checkCredentials = async () => {
-    try {
-      const response = await fetch("/api/user/credentials");
-      setHasCredentials(response.ok);
-    } catch (error) {
-      console.error("Failed to check credentials:", error);
-      setHasCredentials(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    checkCredentials();
-  }, []);
-
-  const handleSetupComplete = () => {
-    setHasCredentials(true);
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
@@ -52,8 +33,12 @@ export default function AuthenticatedApp() {
     );
   }
 
-  if (!hasCredentials) {
-    return <CredentialSetup onSetupComplete={handleSetupComplete} />;
+  if (!hasCredentials && !setupComplete) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-16">
+        <CredentialSetup onSetupComplete={() => setSetupComplete(true)} />
+      </div>
+    );
   }
 
   return (

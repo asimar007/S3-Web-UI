@@ -9,15 +9,21 @@ interface AWSCredentials {
   secretAccessKey: string;
 }
 
+interface BucketConfig {
+  bucketName: string;
+  awsRegion: string;
+}
+
 export function useVaultState() {
   const [credentials, setCredentials] = useState<AWSCredentials | null>(null);
   const [vaultBlob, setVaultBlob] = useState<string | null>(null);
   const [vaultSalt, setVaultSalt] = useState<string | null>(null);
+  const [bucket, setBucket] = useState<BucketConfig | null>(null);
+  const [hasCredentials, setHasCredentials] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const { isLoaded, userId } = useAuth();
 
-  // Fetch encrypted blob on mount OR when user signs in
   useEffect(() => {
     async function fetchBlob() {
       if (!isLoaded || !userId) {
@@ -29,11 +35,16 @@ export function useVaultState() {
         const res = await fetch("/api/user/credentials");
         if (res.ok) {
           const data = await res.json();
+          setHasCredentials(true);
+          setBucket({
+            bucketName: data.bucketName,
+            awsRegion: data.awsRegion,
+          });
+
           if (data.encryptedBlob && data.vaultSalt) {
             setVaultBlob(data.encryptedBlob);
             setVaultSalt(data.vaultSalt);
 
-            // Try to auto-unlock if password is in session storage
             const storedPassword = sessionStorage.getItem("vault_password");
             if (storedPassword) {
               try {
@@ -49,7 +60,6 @@ export function useVaultState() {
                   });
                 }
               } catch {
-                // Stored password invalid or decryption failed, clear it
                 sessionStorage.removeItem("vault_password");
               }
             }
@@ -62,18 +72,18 @@ export function useVaultState() {
       }
     }
 
-    // Reset state if user logs out - ONLY when auth is loaded
     if (isLoaded && !userId) {
       setVaultBlob(null);
       setVaultSalt(null);
       setCredentials(null);
+      setBucket(null);
+      setHasCredentials(false);
       sessionStorage.removeItem("vault_password");
     }
 
     fetchBlob();
   }, [isLoaded, userId]);
 
-  // Simple check: Locked if we have a blob but no keys
   const isLocked = !!vaultBlob && !credentials;
 
   const unlockVault = async (password: string) => {
@@ -86,7 +96,6 @@ export function useVaultState() {
           accessKeyId: data.awsAccessKeyId,
           secretAccessKey: data.awsSecretAccessKey,
         });
-        // Save password to session storage for persistence during reload
         sessionStorage.setItem("vault_password", password);
         return true;
       }
@@ -99,24 +108,23 @@ export function useVaultState() {
     }
   };
 
-  const lockVault = () => {
-    setCredentials(null);
-    sessionStorage.removeItem("vault_password");
-  };
-
-  const setVaultData = (blob: string, salt: string) => {
+  const setVaultData = (
+    blob: string,
+    salt: string,
+    config: BucketConfig,
+  ) => {
     setVaultBlob(blob);
     setVaultSalt(salt);
+    setBucket(config);
   };
 
   return {
     isLocked,
     credentials,
     unlockVault,
-    lockVault,
-    vaultBlob,
-    vaultSalt,
     setVaultData,
+    hasCredentials,
+    bucket,
     isLoading,
   };
 }

@@ -1,56 +1,32 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { PutBucketCorsCommand } from "@aws-sdk/client-s3";
-import { getS3Client } from "@/lib/s3-client";
+import { withS3 } from "@/lib/s3-client";
 
-import { auth } from "@clerk/nextjs/server";
+const ALLOWED_ORIGINS = ["http://localhost:3000", "https://s3buddy.vercel.app"];
 
-export async function POST(request: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const s3Config = await getS3Client(request);
-  if (!s3Config) {
-    return NextResponse.json(
-      { error: "No S3 credentials found" },
-      { status: 404 },
-    );
-  }
-
-  const { client, bucketName } = s3Config;
-
-  // Define trusted origins
-  const allowedOrigins = [
-    "http://localhost:3000",
-    "https://s3buddy.vercel.app",
-  ];
-
-  // Deduplicate origins
-  const uniqueOrigins = [...new Set(allowedOrigins)];
-
+export const POST = withS3(async (_request, { client, bucketName }) => {
   const corsConfiguration = {
     CORSRules: [
       {
         AllowedHeaders: ["*"],
         AllowedMethods: ["GET", "PUT", "POST", "DELETE", "HEAD"],
-        AllowedOrigins: uniqueOrigins,
+        AllowedOrigins: ALLOWED_ORIGINS,
         ExposeHeaders: ["ETag"],
         MaxAgeSeconds: 3000,
       },
     ],
   };
 
-  const command = new PutBucketCorsCommand({
-    Bucket: bucketName,
-    CORSConfiguration: corsConfiguration,
-  });
-
-  await client.send(command);
+  await client.send(
+    new PutBucketCorsCommand({
+      Bucket: bucketName,
+      CORSConfiguration: corsConfiguration,
+    }),
+  );
 
   return NextResponse.json({
     success: true,
     message: "CORS configured successfully",
     corsRules: corsConfiguration.CORSRules,
   });
-}
+});

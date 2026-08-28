@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Settings, Globe, Loader2, Menu, X, Info } from "lucide-react";
 import CredentialEditModal from "@/components/credential-edit-modal";
@@ -14,14 +14,28 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-
 import { cn } from "@/lib/utils";
-import { SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { useVault } from "@/components/vault-provider";
 
-const NavBar = () => {
+export interface NavMenuItem {
+  name: string;
+  onClick: () => void;
+}
+
+interface NavBarProps {
+  homeHref?: string;
+  scrollThreshold?: number;
+  menuItems?: NavMenuItem[];
+}
+
+const NavBar = ({
+  homeHref = "/dashboard",
+  scrollThreshold = 20,
+  menuItems = [],
+}: NavBarProps) => {
   const { user } = useUser();
+  const { credentials } = useVault();
   const [menuState, setMenuState] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -29,17 +43,11 @@ const NavBar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > scrollThreshold);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const handleUpdateComplete = () => {
-    window.location.reload();
-  };
-
-  const { credentials } = useVault(); // Get credentials from Vault
+  }, [scrollThreshold]);
 
   const handleCorsSetup = async (e?: React.MouseEvent<HTMLButtonElement>) => {
     if (e) {
@@ -80,6 +88,46 @@ const NavBar = () => {
     }
   };
 
+  const signInButtons = (fullWidth: boolean) => (
+    <>
+      <Button
+        asChild
+        variant="outline"
+        size="sm"
+        className={cn(fullWidth ? "w-full" : isScrolled && "lg:hidden")}
+        onClick={fullWidth ? () => setMenuState(false) : undefined}
+      >
+        <SignInButton mode="modal">
+          <span>Login</span>
+        </SignInButton>
+      </Button>
+      <Button
+        asChild
+        size="sm"
+        className={cn(
+          fullWidth ? "w-full" : isScrolled ? "lg:inline-flex" : "hidden",
+        )}
+        onClick={fullWidth ? () => setMenuState(false) : undefined}
+      >
+        <SignInButton mode="modal">
+          <span>Get Started</span>
+        </SignInButton>
+      </Button>
+    </>
+  );
+
+  const userButton = (
+    <UserButton
+      appearance={{
+        elements: {
+          avatarBox: "w-8 h-8",
+          userButtonPopoverCard: "shadow-xl border-0",
+          userButtonPopoverActionButton: "hover:bg-primary/10",
+        },
+      }}
+    />
+  );
+
   return (
     <>
       <header>
@@ -94,11 +142,11 @@ const NavBar = () => {
                 "bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5",
             )}
           >
-            {/* Navbar */}
             <div className="relative flex flex-wrap items-center justify-between gap-4 sm:gap-6 py-3 lg:gap-0 lg:py-4">
               <div className="flex w-full justify-between lg:w-auto">
                 <Link
-                  href="/dashboard"
+                  href={homeHref}
+                  aria-label="home"
                   className="flex items-center gap-2 sm:gap-3"
                 >
                   <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-xl overflow-hidden">
@@ -117,7 +165,6 @@ const NavBar = () => {
                   </div>
                 </Link>
 
-                {/* Mobile menu button - show for both authenticated and unauthenticated users */}
                 <button
                   onClick={() => setMenuState(!menuState)}
                   aria-label={menuState ? "Close Menu" : "Open Menu"}
@@ -128,12 +175,27 @@ const NavBar = () => {
                 </button>
               </div>
 
+              {menuItems.length > 0 && (
+                <div className="absolute inset-0 m-auto hidden size-fit lg:block">
+                  <ul className="flex gap-8 text-sm">
+                    {menuItems.map((item) => (
+                      <li key={item.name}>
+                        <button
+                          onClick={item.onClick}
+                          className="text-muted-foreground hover:text-accent-foreground block duration-150 bg-transparent border-none cursor-pointer"
+                        >
+                          <span>{item.name}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Right Section - Desktop */}
               <div className="hidden lg:flex lg:items-center lg:gap-4">
                 {user ? (
-                  // Authenticated user buttons - Desktop
                   <>
-                    {/* CORS Info Tooltip - LEFT side */}
                     <div className="relative">
                       <TooltipProvider>
                         <Tooltip>
@@ -191,72 +253,56 @@ const NavBar = () => {
                       <span>Edit</span>
                     </Button>
 
-                    <UserButton
-                      appearance={{
-                        elements: {
-                          avatarBox: "w-8 h-8",
-                          userButtonPopoverCard: "shadow-xl border-0",
-                          userButtonPopoverActionButton: "hover:bg-primary/10",
-                        },
-                      }}
-                    />
+                    {userButton}
                   </>
                 ) : (
-                  // Unauthenticated user buttons - Desktop
-                  <>
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      className={cn(isScrolled && "lg:hidden")}
-                    >
-                      <SignInButton mode="modal">
-                        <span>Login</span>
-                      </SignInButton>
-                    </Button>
-                    <Button
-                      asChild
-                      size="sm"
-                      className={cn(isScrolled ? "lg:inline-flex" : "hidden")}
-                    >
-                      <SignInButton mode="modal">
-                        <span>Get Started</span>
-                      </SignInButton>
-                    </Button>
-                  </>
+                  signInButtons(false)
                 )}
               </div>
 
               {/* Mobile Menu */}
               <div className="bg-background group-data-[state=active]:block mb-6 hidden w-full rounded-3xl border p-4 sm:p-6 shadow-2xl shadow-zinc-300/20 lg:hidden dark:shadow-none">
-                {/* Mobile Menu Actions */}
-                <div className="flex flex-col space-y-3">
-                  {user ? (
-                    // Authenticated user buttons - Mobile
-                    <>
-                      {/* CORS Info Tooltip - Mobile RIGHT side */}
-                      <div className="flex items-center gap-2 w-full">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            handleCorsSetup(e);
+                {menuItems.length > 0 && (
+                  <ul className="space-y-6 text-base mb-6">
+                    {menuItems.map((item) => (
+                      <li key={item.name}>
+                        <button
+                          onClick={() => {
+                            item.onClick();
                             setMenuState(false);
                           }}
-                          disabled={corsLoading}
-                          className="flex items-center justify-start gap-3 text-muted-foreground hover:text-accent-foreground hover:bg-background/50 transition-colors flex-1 py-3"
+                          className="text-muted-foreground hover:text-accent-foreground block duration-150 bg-transparent border-none cursor-pointer text-left w-full"
                         >
-                          {corsLoading ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                          ) : (
-                            <Globe className="w-5 h-5" />
-                          )}
-                          <span className="text-sm font-medium">
-                            {corsLoading ? "Setting up CORS..." : "Setup CORS"}
-                          </span>
-                        </Button>
-                      </div>
+                          <span>{item.name}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="flex flex-col space-y-3">
+                  {user ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          handleCorsSetup(e);
+                          setMenuState(false);
+                        }}
+                        disabled={corsLoading}
+                        className="flex items-center justify-start gap-3 text-muted-foreground hover:text-accent-foreground hover:bg-background/50 transition-colors w-full py-3"
+                      >
+                        {corsLoading ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <Globe className="w-5 h-5" />
+                        )}
+                        <span className="text-sm font-medium">
+                          {corsLoading ? "Setting up CORS..." : "Setup CORS"}
+                        </span>
+                      </Button>
 
                       <Button
                         variant="ghost"
@@ -275,46 +321,14 @@ const NavBar = () => {
                       </Button>
 
                       <div className="flex items-center justify-start gap-3 py-3 px-3">
-                        <UserButton
-                          appearance={{
-                            elements: {
-                              avatarBox: "w-8 h-8",
-                              userButtonPopoverCard: "shadow-xl border-0",
-                              userButtonPopoverActionButton:
-                                "hover:bg-primary/10",
-                            },
-                          }}
-                        />
+                        {userButton}
                         <span className="text-sm font-medium text-muted-foreground">
                           Profile
                         </span>
                       </div>
                     </>
                   ) : (
-                    // Unauthenticated user buttons - Mobile
-                    <>
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => setMenuState(false)}
-                      >
-                        <SignInButton mode="modal">
-                          <span>Login</span>
-                        </SignInButton>
-                      </Button>
-                      <Button
-                        asChild
-                        size="sm"
-                        className="w-full"
-                        onClick={() => setMenuState(false)}
-                      >
-                        <SignInButton mode="modal">
-                          <span>Get Started</span>
-                        </SignInButton>
-                      </Button>
-                    </>
+                    signInButtons(true)
                   )}
                 </div>
               </div>
@@ -327,7 +341,7 @@ const NavBar = () => {
         <CredentialEditModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onUpdateComplete={handleUpdateComplete}
+          onUpdateComplete={() => window.location.reload()}
         />
       )}
     </>

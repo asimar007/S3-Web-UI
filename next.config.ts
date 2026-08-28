@@ -7,18 +7,11 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // SEO optimizations
-  compress: true,
   poweredByHeader: false,
-  generateEtags: true,
-  // Enable static optimization
-  trailingSlash: false,
-  // Image optimization
   images: {
     formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 60,
   },
-  // Headers for better SEO and security
   async headers() {
     return [
       {
@@ -31,10 +24,6 @@ const nextConfig: NextConfig = {
           {
             key: "X-Frame-Options",
             value: "DENY",
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
           },
           {
             key: "Referrer-Policy",

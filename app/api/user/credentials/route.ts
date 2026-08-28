@@ -16,7 +16,6 @@ export async function GET() {
       vaultSalt: userS3Credentials.vaultSalt,
       awsRegion: userS3Credentials.awsRegion,
       bucketName: userS3Credentials.bucketName,
-      isActive: userS3Credentials.isActive,
     })
     .from(users)
     .innerJoin(userS3Credentials, eq(users.id, userS3Credentials.userId))
@@ -31,13 +30,6 @@ export async function GET() {
   }
 
   const credentials = result[0];
-
-  if (!credentials.isActive) {
-    return NextResponse.json(
-      { error: "Credentials are inactive" },
-      { status: 403 },
-    );
-  }
 
   return NextResponse.json({
     encryptedBlob: credentials.encryptedBlob,

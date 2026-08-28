@@ -16,14 +16,12 @@ interface CreateFolderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateFolder: (folderName: string) => void;
-  currentPath: string;
 }
 
 export default function CreateFolderModal({
   isOpen,
   onClose,
   onCreateFolder,
-  currentPath,
 }: CreateFolderModalProps) {
   const [folderName, setFolderName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +77,7 @@ export default function CreateFolderModal({
             </Button>
           </div>
           <CardDescription className="text-muted-foreground">
-            Create a new folder in {currentPath || "root directory"}
+            Create a new folder in root directory
           </CardDescription>
         </CardHeader>
         <CardContent>
