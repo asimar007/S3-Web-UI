@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-const BASE_URL = "https://s3buddy.icu";
-const OG_IMAGE = "https://s3buddy.icu/images/meta.png";
+const BASE_URL = "https://s3buddy.vercel.app";
+const OG_IMAGE = "https://s3buddy.vercel.app/images/meta.png";
 const TITLE = "S3 Buddy - Modern AWS S3 File Manager";
 const DESCRIPTION =
   "Modern, secure AWS S3 file manager with enterprise-grade security. Beautiful interface for S3 bucket management, file uploads, downloads, and organization. Alternative to AWS Console.";
@@ -33,7 +33,7 @@ export const siteMetadata: Metadata = {
     telephone: false,
   },
   verification: {
-    google: "BjciYxkrtQ--z84rySdvjFM6KDQG7oZ753FgWd0B2m0",
+    google: "24c34Rx6jo-1JjJvDSNh0oEo1Tg_J8my2TJknJ8WPUM",
   },
   metadataBase: new URL(BASE_URL),
   alternates: {

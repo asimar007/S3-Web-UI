@@ -23,8 +23,7 @@ export async function POST(request: NextRequest) {
   // Define trusted origins
   const allowedOrigins = [
     "http://localhost:3000",
-    "https://www.s3buddy.icu",
-    "https://s3buddy.icu",
+    "https://s3buddy.vercel.app",
   ];
 
   // Deduplicate origins

@@ -8,4 +8,4 @@ Disallow: /sign-up
 Disallow: /dashboard
 
 # Sitemap location
-Sitemap: https://s3buddy.icu/sitemap.xml
+Sitemap: https://s3buddy.vercel.app/sitemap.xml
