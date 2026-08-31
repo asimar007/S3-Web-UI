@@ -49,7 +49,7 @@ export default function FileItem({
               nested ? "w-5 h-5 sm:w-6 sm:h-6" : "w-6 h-6 sm:w-8 sm:h-8",
             )}
           >
-            <FileIcon fileName={fileName} size="sm" />
+            <FileIcon fileName={fileName} />
           </div>
           <div className="flex flex-col min-w-0 flex-1">
             <span

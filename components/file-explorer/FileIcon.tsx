@@ -7,17 +7,15 @@ import {
   Music,
   FileSpreadsheet,
   FileCode2,
-  Text,
 } from "lucide-react";
 
 interface FileIconProps {
   fileName: string;
-  size?: "sm" | "md";
 }
 
-export default function FileIcon({ fileName, size = "md" }: FileIconProps) {
+export default function FileIcon({ fileName }: FileIconProps) {
   const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
-  const sizeClass = size === "sm" ? "w-3 h-3" : "w-4 h-4";
+  const sizeClass = "w-3 h-3";
 
   const getFileIconWithColor = () => {
     // Images - Blue
@@ -38,10 +36,10 @@ export default function FileIcon({ fileName, size = "md" }: FileIconProps) {
     }
     // PDFs - Red
     else if (["pdf"].includes(fileExtension)) {
-      return <Text className={`text-red-400 ${sizeClass}`} />;
+      return <FileText className={`text-red-400 ${sizeClass}`} />;
     }
     // Documents - Blue
-    else if (["doc", "docx", "txt", "rtf", "odt"].includes(fileExtension)) {
+    else if (["doc", "docx", "txt", "rtf", "odt", "md"].includes(fileExtension)) {
       return <FileText className={`text-blue-300 ${sizeClass}`} />;
     }
     // Spreadsheets - Green
@@ -50,7 +48,7 @@ export default function FileIcon({ fileName, size = "md" }: FileIconProps) {
     }
     // Archives - Yellow
     else if (
-      ["zip", "rar", "7z", "tar", "gz", "bz2", "md"].includes(fileExtension)
+      ["zip", "rar", "7z", "tar", "gz", "bz2"].includes(fileExtension)
     ) {
       return <Archive className={`text-yellow-400 ${sizeClass}`} />;
     }

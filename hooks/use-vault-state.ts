@@ -3,15 +3,11 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { decryptVault } from "@/lib/crypto-client";
+import type { BucketConfig } from "@/components/file-explorer/types";
 
 interface AWSCredentials {
   accessKeyId: string;
   secretAccessKey: string;
-}
-
-interface BucketConfig {
-  bucketName: string;
-  awsRegion: string;
 }
 
 export function useVaultState() {

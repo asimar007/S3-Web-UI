@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import FileExplorer from "@/components/file-explorer";
+import FileExplorer from "@/components/file-explorer/FileExplorer";
 import CredentialSetup from "@/components/credential-setup";
 import { Database } from "lucide-react";
 import { FlipText } from "@/components/magicui/flip-text";

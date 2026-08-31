@@ -1,20 +1,25 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { useVaultUnlocker } from "@/hooks/use-vault-unlocker";
+import { useRef, useEffect, useState } from "react";
+import { useVault } from "@/components/vault-provider";
 import { ShieldCheck, ShieldX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function VaultUnlocker() {
-  const {
-    isLocked,
-    isLoading,
-    password,
-    setPassword,
-    error,
-    unlocking,
-    handleUnlock,
-  } = useVaultUnlocker();
+  const { isLocked, isLoading, unlockVault } = useVault();
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
+
+  const handleUnlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(false);
+    setUnlocking(true);
+    if (!(await unlockVault(password))) {
+      setError(true);
+    }
+    setUnlocking(false);
+  };
 
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);

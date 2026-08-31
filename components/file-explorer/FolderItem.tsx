@@ -1,11 +1,17 @@
-import { Folder, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import {
+  Folder,
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+  Upload,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import UploadButton from "./UploadButton";
 import FileItem from "./FileItem";
 import { S3Response } from "./types";
 import { cleanFolderName } from "./utils";
@@ -117,14 +123,20 @@ export default function FolderItem({
               </span>
             </div>
             <div className="col-span-6 sm:col-span-3 flex justify-end">
-              <UploadButton
-                onUpload={(e) => {
-                  e?.stopPropagation();
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   onUpload(folder);
                 }}
-                size="sm"
-                className="hover:bg-muted hover:text-foreground transition-colors text-xs sm:text-sm px-2 sm:px-3"
-              />
+                className="flex items-center gap-2 hover:bg-muted hover:text-foreground transition-colors text-xs sm:text-sm px-2 sm:px-3"
+              >
+                <Upload className="h-3 w-3" />
+                Upload
+              </Button>
             </div>
           </div>
         </div>

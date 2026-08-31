@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, FolderPlus } from "lucide-react";
 import BucketInfo from "./BucketInfo";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import StatsBar from "./StatsBar";
@@ -14,7 +14,6 @@ import FolderItem from "./FolderItem";
 import FileItem from "./FileItem";
 import UploadProgress from "./UploadProgress";
 import EmptyState from "./EmptyState";
-import CreateFolderButton from "./CreateFolderButton";
 import CreateFolderModal from "./CreateFolderModal";
 import { S3Response } from "./types";
 import { formatFileSize } from "./utils";
@@ -309,12 +308,16 @@ export default function FileExplorer() {
             <BucketInfo bucketInfo={bucket} />
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <CreateFolderButton
-              onCreateFolder={() => setIsCreateFolderModalOpen(true)}
+            <Button
+              type="button"
               variant="outline"
               size="sm"
-              className="hover:bg-muted hover:text-foreground transition-colors text-xs sm:text-sm"
-            />
+              onClick={() => setIsCreateFolderModalOpen(true)}
+              className="flex items-center gap-2 hover:bg-muted hover:text-foreground transition-colors text-xs sm:text-sm"
+            >
+              <FolderPlus className="h-4 w-4" />
+              Create Folder
+            </Button>
             <Button
               type="button"
               variant="default"

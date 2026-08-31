@@ -9,8 +9,7 @@ export interface S3Response {
   folders: string[];
 }
 
-export interface BucketInfoType {
+export interface BucketConfig {
   bucketName: string;
   awsRegion: string;
 }
-

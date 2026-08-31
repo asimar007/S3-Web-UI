@@ -1,8 +1,8 @@
-import { BucketInfoType } from "./types";
+import { BucketConfig } from "./types";
 import { Database, MapPin } from "lucide-react";
 
 interface BucketInfoProps {
-  bucketInfo: BucketInfoType | null;
+  bucketInfo: BucketConfig | null;
 }
 
 export default function BucketInfo({ bucketInfo }: BucketInfoProps) {
