@@ -6,8 +6,15 @@ import { ShieldCheck, ShieldX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function VaultUnlocker() {
-  const { isLocked, isLoading, password, setPassword, error, handleUnlock } =
-    useVaultUnlocker();
+  const {
+    isLocked,
+    isLoading,
+    password,
+    setPassword,
+    error,
+    unlocking,
+    handleUnlock,
+  } = useVaultUnlocker();
 
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +53,7 @@ export default function VaultUnlocker() {
             }
             autoFocus
             autoComplete="off"
+            disabled={unlocking}
             className="sr-only"
           />
 
@@ -75,7 +83,11 @@ export default function VaultUnlocker() {
                 error ? "text-destructive" : "text-muted-foreground"
               )}
             >
-              {error ? "Incorrect PIN — try again" : "Enter your 4-digit PIN"}
+              {error
+                ? "Incorrect PIN — try again"
+                : unlocking
+                  ? "Decrypting…"
+                  : "Enter your 4-digit PIN"}
             </p>
 
             {/* 4 PIN boxes */}
@@ -88,7 +100,7 @@ export default function VaultUnlocker() {
             >
               {Array.from({ length: 4 }).map((_, i) => {
                 const isFilled = i < password.length;
-                const isActive = i === password.length;
+                const isActive = i === password.length && !unlocking;
 
                 return (
                   <div
@@ -102,7 +114,8 @@ export default function VaultUnlocker() {
                       isFilled && !error && "border-primary/50 bg-primary/5",
                       isFilled && error && "border-destructive/50 bg-destructive/5",
                       // Empty unfocused
-                      !isFilled && !isActive && "border-border bg-muted/30"
+                      !isFilled && !isActive && "border-border bg-muted/30",
+                      unlocking && isFilled && "opacity-50"
                     )}
                   >
                     {isFilled ? (

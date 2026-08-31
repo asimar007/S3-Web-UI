@@ -215,8 +215,8 @@ const NavBar = ({
                                 What is CORS Setup?
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                Just click and go - automatic CORS setup in
-                                seconds! That&apos;s it! 🎉
+                                Lets your browser upload and download directly
+                                to this bucket. One click, no AWS Console.
                               </div>
                             </div>
                           </TooltipContent>

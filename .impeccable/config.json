@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "components/file-explorer/FileExplorer.tsx"
+        ],
+        "createdAt": "2026-08-31T13:50:27.385Z",
+        "reason": "User confirmed: flagged element is the CSS loading-spinner idiom (partial border on a circle is the rotating arc), not a card accent"
+      }
+    ]
+  }
+}

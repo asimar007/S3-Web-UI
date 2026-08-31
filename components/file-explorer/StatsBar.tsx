@@ -1,4 +1,4 @@
-import { Folder, File } from "lucide-react";
+import { Folder, File, Loader2 } from "lucide-react";
 import { S3Response } from "./types";
 
 interface StatsBarProps {
@@ -24,7 +24,7 @@ export default function StatsBar({ data, uploadingFiles }: StatsBarProps) {
         <>
           <div className="w-px h-4 bg-border"></div>
           <div className="flex items-center gap-2 text-sm text-primary">
-            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+            <Loader2 className="h-3 w-3 animate-spin" />
             <span className="font-medium">{uploadingFiles.size} uploading</span>
           </div>
         </>

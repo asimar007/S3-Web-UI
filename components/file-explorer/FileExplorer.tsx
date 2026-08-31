@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Upload, Loader2 } from "lucide-react";
 import BucketInfo from "./BucketInfo";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
 import StatsBar from "./StatsBar";
 import { useVault } from "@/components/vault-provider";
 import FileListHeader from "./FileListHeader";
@@ -29,6 +32,10 @@ export default function FileExplorer() {
   const [loadingFolders, setLoadingFolders] = useState<Set<string>>(new Set());
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
+  const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(
+    new Set(),
+  );
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
 
   const { credentials, bucket } = useVault();
@@ -185,23 +192,41 @@ export default function FileExplorer() {
 
   const handleFileDownload = async (fileKey: string) => {
     if (!credentials) return;
-    const response = await authenticatedFetch(
-      `/api/download?key=${encodeURIComponent(fileKey)}`,
-    );
-    if (!response.ok) return;
+    setDownloadingFiles((prev) => new Set(prev).add(fileKey));
 
-    const { url } = await response.json();
-    window.location.href = url;
+    try {
+      const response = await authenticatedFetch(
+        `/api/download?key=${encodeURIComponent(fileKey)}`,
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Could not prepare that download");
+        return;
+      }
+
+      // Handing the signed URL to a detached iframe keeps an S3 error page from
+      // replacing the explorer, which navigating the tab directly would do.
+      const { url } = await response.json();
+      const frame = document.createElement("iframe");
+      frame.style.display = "none";
+      frame.src = url;
+      document.body.appendChild(frame);
+      setTimeout(() => frame.remove(), 60_000);
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not prepare that download");
+    } finally {
+      setDownloadingFiles((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(fileKey);
+        return newSet;
+      });
+    }
   };
 
   const handleFileDelete = async (fileKey: string) => {
     if (!credentials) return;
-    if (
-      !confirm(`Are you sure you want to delete "${fileKey.split("/").pop()}"?`)
-    ) {
-      return;
-    }
-
+    setPendingDelete(null);
     setDeletingFiles((prev) => new Set(prev).add(fileKey));
 
     try {
@@ -213,13 +238,14 @@ export default function FileExplorer() {
       if (response.ok) {
         await fetchObjects();
         await refreshFolder(fileKey.substring(0, fileKey.lastIndexOf("/") + 1));
+        toast.success(`Deleted ${fileKey.split("/").pop()}`);
       } else {
         const errorData = await response.json();
-        alert(`Failed to delete file: ${errorData.error}`);
+        toast.error(errorData.error || "Could not delete that file");
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to delete file. Please try again.");
+      toast.error("Could not delete that file");
     } finally {
       setDeletingFiles((prev) => {
         const newSet = new Set(prev);
@@ -255,18 +281,22 @@ export default function FileExplorer() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-md">
-        <p className="text-destructive">Error: {error}</p>
-        <Button onClick={() => fetchObjects()} className="mt-2">
-          Retry
-        </Button>
+      <div className="p-2 sm:p-4">
+        <Alert variant="destructive">
+          <AlertDescription className="flex flex-col items-start gap-3">
+            <span>{error}</span>
+            <Button variant="outline" size="sm" onClick={() => fetchObjects()}>
+              Try again
+            </Button>
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
@@ -319,10 +349,11 @@ export default function FileExplorer() {
                 folderContents={folderContents}
                 loadingFolders={loadingFolders}
                 deletingFiles={deletingFiles}
+                downloadingFiles={downloadingFiles}
                 onToggle={toggleFolder}
                 onUpload={triggerFileUpload}
                 onDownload={handleFileDownload}
-                onDelete={handleFileDelete}
+                onDelete={setPendingDelete}
                 getFolderDisplaySize={getFolderDisplaySize}
               />
             ))}
@@ -335,8 +366,9 @@ export default function FileExplorer() {
                   key={file.Key}
                   file={file}
                   onDownload={handleFileDownload}
-                  onDelete={handleFileDelete}
+                  onDelete={setPendingDelete}
                   isDeleting={deletingFiles.has(file.Key)}
+                  isDownloading={downloadingFiles.has(file.Key)}
                 />
               ))}
 
@@ -354,6 +386,12 @@ export default function FileExplorer() {
         isOpen={isCreateFolderModalOpen}
         onClose={() => setIsCreateFolderModalOpen(false)}
         onCreateFolder={handleCreateFolder}
+      />
+
+      <ConfirmDeleteModal
+        fileKey={pendingDelete}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => pendingDelete && handleFileDelete(pendingDelete)}
       />
     </div>
   );

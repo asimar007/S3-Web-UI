@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FolderPlus, X } from "lucide-react";
+import { useEscapeKey } from "@/hooks/use-escape-key";
 
 interface CreateFolderModalProps {
   isOpen: boolean;
@@ -50,11 +51,13 @@ export default function CreateFolderModal({
     onClose();
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setFolderName("");
     setError(null);
     onClose();
-  };
+  }, [onClose]);
+
+  useEscapeKey(isOpen, handleClose);
 
   if (!isOpen) return null;
 

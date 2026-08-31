@@ -7,15 +7,18 @@ export function useVaultUnlocker() {
   const { isLocked, unlockVault, isLoading } = useVault();
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(false);
+    setUnlocking(true);
 
     const success = await unlockVault(password);
     if (!success) {
       setError(true);
     }
+    setUnlocking(false);
   };
 
   return {
@@ -24,6 +27,7 @@ export function useVaultUnlocker() {
     password,
     setPassword,
     error,
+    unlocking,
     handleUnlock,
   };
 }

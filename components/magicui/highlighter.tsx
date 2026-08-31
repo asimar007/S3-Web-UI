@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { annotate } from "rough-notation";
 import type React from "react";
+import { cn } from "@/lib/utils";
 
 // Define available annotation actions
 type AnnotationAction =
@@ -70,8 +71,19 @@ export function Highlighter({
     multiline,
   ]);
 
+  // `highlight` paints a saturated marker behind the text. The inherited light
+  // foreground lands at 2-3:1 on every accent this project uses, so fill
+  // annotations pin a dark foreground that pairs with the marker, not the page.
+  const isFilled = action === "highlight";
+
   return (
-    <span ref={elementRef} className="relative inline-block bg-transparent">
+    <span
+      ref={elementRef}
+      className={cn(
+        "relative inline-block bg-transparent",
+        isFilled && "text-neutral-950",
+      )}
+    >
       {children}
     </span>
   );

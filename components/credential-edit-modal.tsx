@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import CredentialSetup from "@/components/credential-setup";
+import { useEscapeKey } from "@/hooks/use-escape-key";
 
 interface CredentialEditModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ export default function CredentialEditModal({
   onClose,
   onUpdateComplete,
 }: CredentialEditModalProps) {
+  useEscapeKey(isOpen, onClose);
+
   if (!isOpen) return null;
 
   return (

@@ -50,9 +50,8 @@ const transitionVariants = {
       filter: "blur(0px)",
       y: 0,
       transition: {
-        type: "spring" as const,
-        bounce: 0.3,
-        duration: 1.5,
+        duration: 0.8,
+        ease: [0.16, 1, 0.3, 1] as const,
       },
     },
   },
@@ -115,16 +114,10 @@ export function HeroSection() {
                     className="bg-foreground/10 rounded-[14px] border p-0.5"
                   >
                     <SignInButton mode="modal">
-                      <Button
-                        asChild
-                        size="lg"
-                        className="rounded-xl px-5 text-base"
-                      >
-                        <Link href="#link">
-                          <span className="text-nowrap">
-                            Start Managing Files
-                          </span>
-                        </Link>
+                      <Button size="lg" className="rounded-xl px-5 text-base">
+                        <span className="text-nowrap">
+                          Start Managing Files
+                        </span>
                       </Button>
                     </SignInButton>
                   </div>
@@ -153,9 +146,9 @@ export function HeroSection() {
                 <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
                   <Lens>
                     <Image
-                      className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
+                      className="bg-background aspect-15/8 relative rounded-2xl"
                       src="/images/file-explorer.png"
-                      alt="app screen"
+                      alt="The S3 Buddy file explorer listing folders and files in a bucket"
                       width={2700}
                       height={1440}
                       priority={false}
@@ -191,7 +184,7 @@ export function HeroSection() {
                 <HyperText className="text-3xl md:text-4xl font-bold mb-4">
                   Advanced S3 Management Made Simple
                 </HyperText>
-                <p className="text-lg text-white max-w-2xl mx-auto">
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                   With our trusted platform, you can safely and efficiently
                   handle all your S3 storage
                   <Highlighter action="highlight" color="#3B82F6">

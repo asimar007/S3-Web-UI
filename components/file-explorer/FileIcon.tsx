@@ -1,5 +1,5 @@
 import {
-  Image,
+  Image as ImageIcon,
   FileText,
   File,
   Archive,
@@ -34,7 +34,7 @@ export default function FileIcon({ fileName, size = "md" }: FileIconProps) {
         "tiff",
       ].includes(fileExtension)
     ) {
-      return <Image className={`text-blue-400 ${sizeClass}`} />;
+      return <ImageIcon className={`text-blue-400 ${sizeClass}`} />;
     }
     // PDFs - Red
     else if (["pdf"].includes(fileExtension)) {

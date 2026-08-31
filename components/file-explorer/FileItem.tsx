@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Download, Trash2 } from "lucide-react";
+import { Download, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FileIcon from "./FileIcon";
 import { S3Object } from "./types";
@@ -17,6 +17,7 @@ interface FileItemProps {
   onDownload: (fileKey: string) => void;
   onDelete: (fileKey: string) => void;
   isDeleting: boolean;
+  isDownloading?: boolean;
 }
 
 export default function FileItem({
@@ -26,6 +27,7 @@ export default function FileItem({
   onDownload,
   onDelete,
   isDeleting,
+  isDownloading = false,
 }: FileItemProps) {
   const fileName = prefix ? file.Key.replace(prefix, "") : file.Key;
   const fileExtension = getFileExtension(fileName);
@@ -36,7 +38,7 @@ export default function FileItem({
         "transition-all duration-200",
         nested
           ? "px-3 sm:px-4 py-2 sm:py-3 hover:bg-muted/30 border-b border-border ml-4 sm:ml-8"
-          : "px-3 sm:px-6 py-3 sm:py-4 hover:bg-muted/50 border-l-4 border-transparent hover:border-primary",
+          : "px-3 sm:px-6 py-3 sm:py-4 hover:bg-muted/50",
       )}
     >
       <div className="grid grid-cols-12 gap-2 sm:gap-4 items-center">
@@ -102,13 +104,27 @@ export default function FileItem({
             variant="outline"
             size="sm"
             onClick={() => onDownload(file.Key)}
+            disabled={isDownloading}
             className={cn(
               "flex items-center gap-1 sm:gap-2 hover:bg-muted hover:text-foreground transition-colors text-xs sm:text-sm px-2 sm:px-3",
               !nested && "shadow-sm",
             )}
           >
-            <Download className={nested ? "h-3 w-3" : "h-3 w-3 sm:h-4 sm:w-4"} />
-            <span className="hidden sm:inline">Download</span>
+            {isDownloading ? (
+              <Loader2
+                className={cn(
+                  "animate-spin",
+                  nested ? "h-3 w-3" : "h-3 w-3 sm:h-4 sm:w-4",
+                )}
+              />
+            ) : (
+              <Download
+                className={nested ? "h-3 w-3" : "h-3 w-3 sm:h-4 sm:w-4"}
+              />
+            )}
+            <span className="hidden sm:inline">
+              {isDownloading ? "Preparing…" : "Download"}
+            </span>
           </Button>
           <Button
             variant="outline"
@@ -122,9 +138,9 @@ export default function FileItem({
             title={isDeleting ? "Deleting..." : "Delete file"}
           >
             {isDeleting ? (
-              <div
+              <Loader2
                 className={cn(
-                  "animate-spin rounded-full border-b-2 border-destructive",
+                  "animate-spin text-destructive",
                   nested ? "h-3 w-3" : "h-3 w-3 sm:h-4 sm:w-4",
                 )}
               />

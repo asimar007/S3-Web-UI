@@ -61,7 +61,7 @@ export default function AuthenticatedApp() {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-white text-lg sm:text-xl max-w-2xl">
+            <p className="text-muted-foreground text-lg sm:text-xl max-w-2xl">
               Stop wrestling with the{" "}
               <Highlighter action="highlight" color="#03A6A1">
                 AWS Console clunky interface

@@ -1,4 +1,4 @@
-import { Folder, ChevronDown, ChevronRight } from "lucide-react";
+import { Folder, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -18,6 +18,7 @@ interface FolderItemProps {
   folderContents: Map<string, S3Response>;
   loadingFolders: Set<string>;
   deletingFiles: Set<string>;
+  downloadingFiles: Set<string>;
   onToggle: (folderPath: string) => void;
   onUpload: (folderPath: string) => void;
   onDownload: (fileKey: string) => void;
@@ -33,6 +34,7 @@ export default function FolderItem({
   folderContents,
   loadingFolders,
   deletingFiles,
+  downloadingFiles,
   onToggle,
   onUpload,
   onDownload,
@@ -52,7 +54,7 @@ export default function FolderItem({
             "cursor-pointer transition-all duration-200 w-full",
             nested
               ? "px-3 sm:px-4 py-2 sm:py-3 hover:bg-muted/30 border-b border-border ml-2 sm:ml-4"
-              : "px-3 sm:px-6 py-3 sm:py-4 hover:bg-muted/50 border-l-4 border-transparent hover:border-primary",
+              : "px-3 sm:px-6 py-3 sm:py-4 hover:bg-muted/50",
           )}
         >
           <div className="grid grid-cols-12 gap-2 sm:gap-4 items-center">
@@ -94,7 +96,7 @@ export default function FolderItem({
                 </span>
               </div>
               {isLoading && (
-                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-2 border-muted border-t-primary flex-shrink-0"></div>
+                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin text-primary flex-shrink-0" />
               )}
             </div>
             <div className="hidden sm:block sm:col-span-2">
@@ -140,6 +142,7 @@ export default function FolderItem({
                 folderContents={folderContents}
                 loadingFolders={loadingFolders}
                 deletingFiles={deletingFiles}
+                downloadingFiles={downloadingFiles}
                 onToggle={onToggle}
                 onUpload={onUpload}
                 onDownload={onDownload}
@@ -158,6 +161,7 @@ export default function FolderItem({
                   onDownload={onDownload}
                   onDelete={onDelete}
                   isDeleting={deletingFiles.has(file.Key)}
+                  isDownloading={downloadingFiles.has(file.Key)}
                 />
               ))}
           </div>
