@@ -188,18 +188,10 @@ export default function FileExplorer() {
     const response = await authenticatedFetch(
       `/api/download?key=${encodeURIComponent(fileKey)}`,
     );
+    if (!response.ok) return;
 
-    if (response.ok) {
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = objectUrl;
-      link.download = fileKey.split("/").pop() || "download";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(objectUrl);
-    }
+    const { url } = await response.json();
+    window.location.href = url;
   };
 
   const handleFileDelete = async (fileKey: string) => {
@@ -220,9 +212,7 @@ export default function FileExplorer() {
 
       if (response.ok) {
         await fetchObjects();
-        await refreshFolder(
-          fileKey.substring(0, fileKey.lastIndexOf("/") + 1),
-        );
+        await refreshFolder(fileKey.substring(0, fileKey.lastIndexOf("/") + 1));
       } else {
         const errorData = await response.json();
         alert(`Failed to delete file: ${errorData.error}`);
