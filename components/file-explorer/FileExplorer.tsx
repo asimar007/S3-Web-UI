@@ -61,15 +61,19 @@ export default function FileExplorer() {
     });
   };
 
-  const fetchObjects = async () => {
+  // Mutations revalidate in the background: flipping `loading` here would
+  // unmount the whole list and read as a page reload.
+  const fetchObjects = async ({ silent = false } = {}) => {
     if (!credentials) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(null);
     const response = await authenticatedFetch("/api/objects");
     if (!response.ok) {
       const errorData = await response.json();
-      setError(errorData.error || "Failed to fetch objects");
-      setData({ files: [], folders: [] });
+      if (!silent) {
+        setError(errorData.error || "Failed to fetch objects");
+        setData({ files: [], folders: [] });
+      }
       setLoading(false);
       return;
     }
@@ -78,11 +82,13 @@ export default function FileExplorer() {
     setLoading(false);
   };
 
-  const fetchFolderContents = async (folderPath: string) => {
-    if (folderContents.has(folderPath)) return;
+  const fetchFolderContents = async (folderPath: string, force = false) => {
     if (!credentials) return;
+    if (!force && folderContents.has(folderPath)) return;
 
-    setLoadingFolders((prev) => new Set(prev).add(folderPath));
+    if (!force) {
+      setLoadingFolders((prev) => new Set(prev).add(folderPath));
+    }
     const response = await authenticatedFetch(
       `/api/objects?prefix=${encodeURIComponent(folderPath)}`,
     );
@@ -95,6 +101,24 @@ export default function FileExplorer() {
       newSet.delete(folderPath);
       return newSet;
     });
+  };
+
+  /** Applies a local edit to whichever listing owns `prefix` ("" is the root). */
+  const patchScope = (prefix: string, fn: (scope: S3Response) => S3Response) => {
+    if (prefix === "") {
+      setData(fn);
+      return;
+    }
+    setFolderContents((prev) => {
+      const current = prev.get(prefix);
+      if (!current) return prev;
+      return new Map(prev).set(prefix, fn(current));
+    });
+  };
+
+  const revalidate = async (prefix: string) => {
+    if (prefix === "") await fetchObjects({ silent: true });
+    else if (folderContents.has(prefix)) await fetchFolderContents(prefix, true);
   };
 
   const toggleFolder = async (folderPath: string) => {
@@ -132,46 +156,56 @@ export default function FileExplorer() {
     return totalSize > 0 ? formatFileSize(totalSize) : "—";
   };
 
-  const refreshFolder = async (folderPath: string) => {
-    if (!folderContents.has(folderPath)) return;
-    setFolderContents((prev) => {
-      const newMap = new Map(prev);
-      newMap.delete(folderPath);
-      return newMap;
-    });
-    await fetchFolderContents(folderPath);
-  };
-
   const handleFileUpload = async (folderPath: string, file: File) => {
     if (!credentials) return;
     const fullKey = `${folderPath}${file.name}`;
     setUploadingFiles((prev) => new Set(prev).add(fullKey));
 
-    const uploadResponse = await authenticatedFetch(
-      `/api/upload?key=${encodeURIComponent(fullKey)}`,
-    );
-    if (uploadResponse.ok) {
-      const { url } = await uploadResponse.json();
+    try {
+      const uploadResponse = await authenticatedFetch(
+        `/api/upload?key=${encodeURIComponent(fullKey)}`,
+      );
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        toast.error(errorData.error || `Could not upload ${file.name}`);
+        return;
+      }
 
+      const { url } = await uploadResponse.json();
       const putResponse = await fetch(url, {
         method: "PUT",
         body: file,
         headers: { "Content-Type": file.type },
       });
 
-      if (putResponse.ok) {
-        await refreshFolder(folderPath);
-        if (folderPath === "") {
-          await fetchObjects();
-        }
+      if (!putResponse.ok) {
+        toast.error(`Could not upload ${file.name}`);
+        return;
       }
-    }
 
-    setUploadingFiles((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(fullKey);
-      return newSet;
-    });
+      patchScope(folderPath, (scope) => ({
+        ...scope,
+        files: [
+          ...scope.files.filter((f) => f.Key !== fullKey),
+          {
+            Key: fullKey,
+            Size: file.size,
+            LastModified: new Date().toISOString(),
+          },
+        ],
+      }));
+      toast.success(`Uploaded ${file.name}`);
+      revalidate(folderPath);
+    } catch (error) {
+      console.error(error);
+      toast.error(`Could not upload ${file.name}`);
+    } finally {
+      setUploadingFiles((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(fullKey);
+        return newSet;
+      });
+    }
   };
 
   const triggerFileUpload = (folderPath: string) => {
@@ -225,8 +259,15 @@ export default function FileExplorer() {
 
   const handleFileDelete = async (fileKey: string) => {
     if (!credentials) return;
+    const prefix = fileKey.substring(0, fileKey.lastIndexOf("/") + 1);
     setPendingDelete(null);
     setDeletingFiles((prev) => new Set(prev).add(fileKey));
+
+    // Drop the row now; a failed request puts it back via revalidate below.
+    patchScope(prefix, (scope) => ({
+      ...scope,
+      files: scope.files.filter((f) => f.Key !== fileKey),
+    }));
 
     try {
       const response = await authenticatedFetch(
@@ -235,16 +276,16 @@ export default function FileExplorer() {
       );
 
       if (response.ok) {
-        await fetchObjects();
-        await refreshFolder(fileKey.substring(0, fileKey.lastIndexOf("/") + 1));
         toast.success(`Deleted ${fileKey.split("/").pop()}`);
       } else {
         const errorData = await response.json();
         toast.error(errorData.error || "Could not delete that file");
+        await revalidate(prefix);
       }
     } catch (error) {
       console.error(error);
       toast.error("Could not delete that file");
+      await revalidate(prefix);
     } finally {
       setDeletingFiles((prev) => {
         const newSet = new Set(prev);
@@ -258,13 +299,34 @@ export default function FileExplorer() {
     if (!credentials) return;
     const folderKey = `${folderName}/`;
 
-    const response = await authenticatedFetch(
-      `/api/upload?key=${encodeURIComponent(folderKey)}`,
-    );
+    if (data.folders.includes(folderKey)) {
+      toast.error(`"${folderName}" already exists`);
+      return;
+    }
 
-    if (response.ok) {
+    setData((prev) => ({
+      ...prev,
+      folders: [...prev.folders, folderKey].sort(),
+    }));
+
+    const undo = () =>
+      setData((prev) => ({
+        ...prev,
+        folders: prev.folders.filter((f) => f !== folderKey),
+      }));
+
+    try {
+      const response = await authenticatedFetch(
+        `/api/upload?key=${encodeURIComponent(folderKey)}`,
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Could not create that folder");
+        undo();
+        return;
+      }
+
       const { url } = await response.json();
-
       const putResponse = await fetch(url, {
         method: "PUT",
         body: "",
@@ -272,8 +334,15 @@ export default function FileExplorer() {
       });
 
       if (putResponse.ok) {
-        await fetchObjects();
+        toast.success(`Created ${folderName}`);
+      } else {
+        toast.error("Could not create that folder");
+        undo();
       }
+    } catch (error) {
+      console.error(error);
+      toast.error("Could not create that folder");
+      undo();
     }
   };
 

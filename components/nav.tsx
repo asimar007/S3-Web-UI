@@ -341,7 +341,7 @@ const NavBar = ({
         <CredentialEditModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onUpdateComplete={() => window.location.reload()}
+          onUpdateComplete={() => setIsEditModalOpen(false)}
         />
       )}
     </>
