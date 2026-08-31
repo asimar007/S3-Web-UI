@@ -422,6 +422,7 @@ export default function FileExplorer() {
                 loadingFolders={loadingFolders}
                 deletingFiles={deletingFiles}
                 downloadingFiles={downloadingFiles}
+                uploadingFiles={uploadingFiles}
                 onToggle={toggleFolder}
                 onUpload={triggerFileUpload}
                 onDownload={handleFileDownload}

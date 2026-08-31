@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import FileItem from "./FileItem";
+import UploadProgress from "./UploadProgress";
 import { S3Response } from "./types";
 import { cleanFolderName } from "./utils";
 
@@ -25,6 +26,7 @@ interface FolderItemProps {
   loadingFolders: Set<string>;
   deletingFiles: Set<string>;
   downloadingFiles: Set<string>;
+  uploadingFiles: Set<string>;
   onToggle: (folderPath: string) => void;
   onUpload: (folderPath: string) => void;
   onDownload: (fileKey: string) => void;
@@ -41,6 +43,7 @@ export default function FolderItem({
   loadingFolders,
   deletingFiles,
   downloadingFiles,
+  uploadingFiles,
   onToggle,
   onUpload,
   onDownload,
@@ -142,9 +145,15 @@ export default function FolderItem({
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        {contents && (
-          <div className="ml-8 border-l-2 border-border">
-            {contents.folders.map((child) => (
+        <div className="ml-8 border-l-2 border-border">
+          <UploadProgress
+            uploadingFiles={uploadingFiles}
+            prefix={folder}
+            nested
+          />
+          {contents && (
+            <>
+              {contents.folders.map((child) => (
               <FolderItem
                 key={child}
                 folder={child}
@@ -155,6 +164,7 @@ export default function FolderItem({
                 loadingFolders={loadingFolders}
                 deletingFiles={deletingFiles}
                 downloadingFiles={downloadingFiles}
+                uploadingFiles={uploadingFiles}
                 onToggle={onToggle}
                 onUpload={onUpload}
                 onDownload={onDownload}
@@ -176,8 +186,9 @@ export default function FolderItem({
                   isDownloading={downloadingFiles.has(file.Key)}
                 />
               ))}
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </CollapsibleContent>
     </Collapsible>
   );
